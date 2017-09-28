@@ -203,7 +203,7 @@ def quartz_dislocation_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.
     V = 0  # activation volume per mol. Negligible at crustal depths.
     f = 0  # fugacity of water. Not well constrained.
     r = 0  # constant exponent (water fugacity). Not well constrained.
-    P = 0  # pressure. Negligibleat crustal depths. 
+    P = 0  # pressure. Negligible at crustal depths.
 
     # estimate differential stress values
     diff_stress = power_law_creep(ss_rate, A, n, Q, R, T_masked, P, V, d, m, f, r)
@@ -469,18 +469,35 @@ def granite_solidus():
     return None
 
 
-def Goetze_line(moho):
+def Goetze_line(z0=0):
     """Plot the Goetze's criterion (Briegel & Goetze, 1978) in the differential
     stress vs deep space.
 
     Parameters
     ----------
+    z0:
+
+
+    Assumptions
+    -----------
+    - g does not vary with depth (constant)
+    - Average density for the entire crust is 2750 kg/m**3
+    - Average density for the lithospheric mantle is 3330 kg/m**3
     """
+    # km to meters
+    z_moho = moho * 1000
+    z_lithos = lithosphere_base * 1000
 
-    depths = TODO
-    diff_stress = TODO
+    # Depths
+    depths = [z0, moho, lithosphere_base]
 
-    return ax1.plot(diff_stress, depths, 'k--', label="Goetze's criterion'")
+    # Estimate the pressures at corresponding depths
+    moho_P = ro_crust * g * z_moho
+    ro = ((z_moho / z_lithos) * ro_crust) + (((z_lithos - z_moho) / z_lithos) * ro_mantle)
+    lithos_base_P = ro * g * z_lithos
+    lithos_P = [0, moho_P, lithos_base_P]
+
+    return ax1.plot(lithos_P, depths, 'k--', label="Goetze's criterion'")
 
 
 # ==============================================================================#
@@ -607,8 +624,8 @@ texto = """
 #                                                                                      #
 #      fricc_strength  # plot friccional slopes                                        #
 #      quartz_dislocation_creep  # plot flow laws for dislocation creep in quartz      #
-#      olivine_dislocation_creep  #  plot flow laws for dislocation creep in olivine   #
-#      Goetze_line  #  plot the Goetze criterion                                       #
+#      olivine_dislocation_creep  # plot flow laws for dislocation creep in olivine    #
+#      Goetze_line  # plot the Goetze criterion                                        #
 #                                                                                      #
 #  TEMPERATURE vs DEPTH plot                                                           #
 #                                                                                      #
@@ -621,7 +638,7 @@ texto = """
 #                                                                                      #
 #  (1) typing help(name of the method) in the console. e.g. >>> help(stable_geotherm)  #
 #                                                                                      #
-#  (2) in the Spyder editor by writing the name of the method and clicking Ctrl + I    #
+#  (2) in the Spyder console by writing the name of the method and clicking Ctrl + I   #
 #                                                                                      #
 #  (3) Visit the documentation webpage at http://...TODO                               #
 #                                                                                      #
