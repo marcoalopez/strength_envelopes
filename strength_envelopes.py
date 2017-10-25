@@ -157,8 +157,8 @@ def quartz_dislocation_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.
         acorresponding depths [km]
 
     form: string
-        the flow law default parameters, either 'Luan', 'Gleason', 'Hirth', or
-        'Rutter'. Default='Luan'
+        the flow law default parameters, either 'Luan', 'Gleason', 'Hirth',
+        'Holyoke', or Rutter'. Default='Luan'
 
     ss_rate: float
         strain rate [s**-1]. Assumed average shear strain rate in the ductile
@@ -196,12 +196,17 @@ def quartz_dislocation_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.
         Q = 223000  # activation energy [J mol**-1]
         A = 1.1e-4  # material parameter [MPa**-n s**-1]
 
+    elif form == 'Holyoke':  # Gleason and Tullis (1995) corrected by Holyoke and Kronenberg (2010)
+        n = 4.0  # stress exponent
+        Q = 223000  # activation energy [J mol**-1]
+        A = 5.1e-4  # material parameter [MPa**-n s**-1]
+
     elif form == 'Hirth':  # from Hirth et al. (2001)
         n = 4.0  # stress exponent
         Q = 135000  # activation energy [J mol**-1]
-        A = 10**(-11.6)  # material parameter [MPa**-n s**-1]
+        A = 10**(-11.2)  # material parameter [MPa**-n s**-1]
 
-    elif form == 'Rutter':  # from Rutter and Brodie (2004). Wet quartzite.
+    elif form == 'Rutter':  # from Rutter and Brodie (2004). Wet quartzite, minor grain boundary sliding inferred.
         n = 2.97  # stress exponent
         Q = 242000  # activation energy [J mol**-1]
         A = 10**(-4.93)  # material parameter [MPa**-n s**-1]
@@ -624,10 +629,96 @@ def thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
 
     Returns
     -------
-    The temperature in K
+    The temperature in K, a float
     """
 
     return T_surf + ((Jq / K) * (z - z0)) - ((A / (2 * K)) * (z - z0)**2)
+
+
+def quartz_piezometer(d, form='Stipp'):
+    """ Apply different quartz paleopieometric relations to estimate differential
+    stress from 1D apparent grain sizes. The piezometric relations has the
+    following expression:
+
+    diff_stress = B d**-p
+
+    where diff_stress is the differential stress in [MPa], B is an experimentally
+    derived parameter in [MPa micron**p], d is the grain size in [microns], and p
+    is an experimentally derived exponent which is adimensonal.
+
+    Parameters
+    ----------
+    d: integer or float
+        the apparent grain size in microns
+
+    form: a string
+        the piezometric relation to be used, either:
+            | 'Cross' and 'Cross2' from Cross et al. (2017)
+            | 'Holyoke' from Holyoke and Kronenberg (2010)
+            | 'Shimizu' from Shimizu (2008)
+            | 'Stipp' from Stipp and Tullis (2003)
+            | 'Twiss' from Twiss (1977)
+
+    References
+    ----------
+    TODO
+
+    Assumptions
+    -----------
+    - Independence of temperature (excepting Shimizu's piezometer), total strain,
+    flow stress, and water content.
+
+    - The piezometer relations of Stipp and Tullis (2003), Holyoke and Kronenberg (2010),
+    and Cross et al. (2007) requires to enter the grain size as the root mean square
+    apparent grain size calculated from equivalent circular diameters with no stereological
+    correction.
+
+    - The piezometer relation of Shimizu (2009) requires to enter the ...abs
+    apparent grain size calculated from equivalent circular diameters with no
+    stereological correction.
+
+    - The piezometer of Twiss (1977) requires to enter the mean apparent grain size
+    calculated from equivalent circular diameters with no stereological correction.
+    The function will convert this value to the mean linear intercept grain size
+    according to de Hoff and Rhines (1968) empirical relation...TODO
+
+    TODO
+
+    Returns
+    -------
+    The differential stress in MPa, a float"""
+
+    if form == 'Stipp':
+        B = 669.0
+        p = 0.79
+
+    elif form == 'Holyoke':
+        B = 490.3
+        p = 0.79
+
+    elif form == 'Cross':
+        B = 593.0
+        p = 0.71
+
+    elif form == 'Cross2':
+        B = 450.9
+        p = 0.63
+
+    elif form == 'Shimizu':
+        B = 349.9
+        p = 0.8
+        pass
+
+    elif form == 'Twiss':
+        B = 603.1  # Recalculated from Twiss (1977) using [5.5 * (1000**0.68)] (Note: B is 5.5 when grain size (d) is in mm)
+        p = 0.68
+        d = d / (np.sqrt(4 / np.pi))  # convert equivalent circular diameter to linear intercept (de Hoff and Rhines, 1968)
+
+    else:
+        print('Wrong from. Please choose between valid forms')
+        return None
+
+    return B * d**-p
 
 # ==============================================================================#
 
