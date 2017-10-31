@@ -636,15 +636,15 @@ def thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
 
 
 def quartz_piezometer(d, form='Stipp'):
-    """ Apply different quartz paleopieometric relations to estimate differential
+    """ Apply different quartz piezometric relations to estimate the differential
     stress from 1D apparent grain sizes. The piezometric relations has the
     following expression:
 
     diff_stress = B d**-p
 
     where diff_stress is the differential stress in [MPa], B is an experimentally
-    derived parameter in [MPa micron**p], d is the grain size in [microns], and p
-    is an experimentally derived exponent which is adimensonal.
+    derived parameter in [MPa micron**p], d is the aparent grain size in [microns],
+    and p is an experimentally derived exponent which is adimensonal.
 
     Parameters
     ----------
@@ -771,8 +771,7 @@ ax1 = fig.add_subplot(121)
 plt.gca().invert_yaxis()
 plt.gca().xaxis.tick_top()
 plt.gca().xaxis.set_label_position('top')
-ax1.set_xlabel('Differential stress (MPa)')
-ax1.set_ylabel('Depth (km)')
+ax1.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
 ax1.plot([0, 600], [moho, moho], 'k-')
 ax1.text(0, moho - moho / 90, 'Average Moho', fontsize=10)
 ax1.plot(0, 0)
@@ -781,7 +780,7 @@ ax2 = fig.add_subplot(122)
 plt.gca().invert_yaxis()
 plt.gca().xaxis.tick_top()
 plt.gca().xaxis.set_label_position('top')
-ax2.set_xlabel('Temperature ($\degree C$)')
+ax2.set(xlabel='Temperature ($\degree C$)')
 ax2.plot([0, 1100], [moho, moho], 'k-')
 ax2.text(0, moho - moho / 90, 'Average Moho', fontsize=10)
 ax2.plot([0, 1100], [lithosphere_base, lithosphere_base], 'k-')
