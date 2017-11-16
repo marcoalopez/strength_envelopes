@@ -212,7 +212,7 @@ def quartz_dislocation_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.
         A = 10**(-4.93)  # material parameter [MPa**-n s**-1]
 
     else:
-        print("Wrong form. Please try again using 'Gleason', 'Luan', 'Hirth' or 'Rutter'")
+        print("Wrong form. Please try again using 'Gleason', 'Luan', 'Hirth', 'Holyoke' or 'Rutter'")
 
     # Select a specific range of temperature gradient according to depths z0 and moho
     mask = np.logical_and(depth_values >= z0, depth_values <= moho)
@@ -388,7 +388,7 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(64.0, 0.4, 3.2), mantle
 
     - The model requires providing the depth of the lithosphere base.
 
-    - The surface elevation is always set to zero and therefore the LAB depth
+    - The surface elevation is always set to zero and hence the LAB depth
     is measured relative to the surface elevation not the mean sea level
     (Lagrangian reference frame)
 
@@ -406,14 +406,13 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(64.0, 0.4, 3.2), mantle
     Tg_crust = Jq_crust / K_crust
     Tg_mantle = Jq_mantle / K_mantle
 
-    # Generate a mesh of depth values [m]
-    depth_values = np.linspace(0, LAB * 1000, 2**12)  # density of mesh = 2^12
-    moho_m = moho * 1000
+    # Generate a mesh of depth values [km]
+    depth_values = np.linspace(0, LAB, 2**12)  # density of mesh = 2^12
 
     # Estimate temperatures
-    T_crust = thermal_gradient_eq(0, depth_values[depth_values <= moho_m], T_surf, Jq_crust, A_crust, K_crust)
+    T_crust = thermal_gradient_eq(0, depth_values[depth_values <= moho], T_surf, Jq_crust, A_crust, K_crust)
     rf_new = depth_values[depth_values <= moho][-1]
-    T_mantle = thermal_gradient_eq(rf_new, depth_values[depth_values > moho_m], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
+    T_mantle = thermal_gradient_eq(rf_new, depth_values[depth_values > moho], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
     T_values = np.hstack((T_crust, T_mantle))
 
     print(' ')
@@ -426,7 +425,7 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(64.0, 0.4, 3.2), mantle
     print(' ')
 
     # plot data in the temperature vs depth space (ax2) [C deg vs km]
-    ax2.plot(T_values - 273.15, depth_values / 1000, '-', label='Geothermal gradient')
+    ax2.plot(T_values - 273.15, depth_values, '-', label='Geothermal gradient')
 
     return T_values, depth_values
 
@@ -773,7 +772,7 @@ plt.gca().xaxis.tick_top()
 plt.gca().xaxis.set_label_position('top')
 ax1.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
 ax1.plot([0, 600], [moho, moho], 'k-')
-ax1.text(0, moho - moho / 90, 'Average Moho', fontsize=10)
+ax1.text(0, moho - moho / 90, 'Moho', fontsize=10)
 ax1.plot(0, 0)
 
 ax2 = fig.add_subplot(122)
@@ -782,7 +781,7 @@ plt.gca().xaxis.tick_top()
 plt.gca().xaxis.set_label_position('top')
 ax2.set(xlabel='Temperature ($\degree C$)')
 ax2.plot([0, 1100], [moho, moho], 'k-')
-ax2.text(0, moho - moho / 90, 'Average Moho', fontsize=10)
+ax2.text(0, moho - moho / 90, 'Moho', fontsize=10)
 ax2.plot([0, 1100], [lithosphere_base, lithosphere_base], 'k-')
 ax2.text(0, lithosphere_base - lithosphere_base / 90, 'lithosphere base', fontsize=10)
 
