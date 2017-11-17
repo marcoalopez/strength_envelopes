@@ -346,11 +346,11 @@ def triple_point(form='Holdoway'):
     return None
 
 
-def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(64.0, 0.4, 3.2), mantle_params=(34, 0.0, 3.35)):
+def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.89, 3.2), mantle_params=(34, 0.0, 3.35)):
     """ Estimate and plot a steady-state thermal gradient for the continental
     lithosphere considering a two-layer model (crust vs lithospheric mantle).
     It uses the Turcotte and Schubert (1982) model (see thermal_gradient_eq
-    function). Thermal parameters taken from Jaupart & Mareschal (2007).
+    function).
 
     Parameters
     ----------
@@ -368,18 +368,18 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(64.0, 0.4, 3.2), mantle
             | A -  Average rate of radiogenic heat production [microW m**-3]
             | K -  Coefficient of thermal conductivity [W m**-1 K**-1]
 
-            Default thermal values for the crust (see Jaupart & Mareschal, 2007):
-                | Jq = 64.0
-                | A = 0.4
-                | K = 3.2  # in granite (Clark, 1966)
+            Default thermal values for the crust:
+                | Jq = 65  # from Jaupart and Mareschal (2007)
+                | A = 0.89  # average value (Rudnick and Gao, 2014)
+                | K = 3.2  # in granite at room T (Clark, 1966)
 
     mantle_params: tuple with three integer or float values
         thermal parameters within the lithospheric mantle (Jq, A, K).
 
             Default thermal values for the lithospheric mantle:
-                | Jq = 34
-                | A = 0.0
-                | K = 2.8  # in peridotite (Clark, 1966)
+                | Jq = 34  # from Sclater et al. (1980)
+                | A = 0.0  # from Jaupart and Mareschal (2007)
+                | K = 2.8  # in peridotite at room T (Clark, 1966)
 
     Assumptions
     -----------
@@ -390,7 +390,15 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(64.0, 0.4, 3.2), mantle
 
     - The surface elevation is always set to zero and hence the LAB depth
     is measured relative to the surface elevation not the mean sea level
-    (Lagrangian reference frame)
+    (Lagrangian reference frame).
+
+    - The thermal properities of the rocks are isotropic.
+    
+    - The temperature dependence of thermal conductivity is neglected.
+
+    Call function
+    -------------
+    thermal_gradient_eq
 
     Returns
     -------
@@ -734,14 +742,14 @@ texto = """
 #                                                                                      #
 #  The following methods are available:                                                #
 #                                                                                      #
-#  DIFFERENTIAL STRESS vs DEPTH plot                                                   #
+#  DIFFERENTIAL STRESS vs DEPTH space                                                  #
 #                                                                                      #
 #      fric_strength  # plot friccional slopes                                         #
 #      quartz_dislocation_creep  # plot flow laws for dislocation creep in quartz      #
 #      olivine_dislocation_creep  # plot flow laws for dislocation creep in olivine    #
 #      Goetze_line  # plot the Goetze criterion                                        #
 #                                                                                      #
-#  TEMPERATURE vs DEPTH plot                                                           #
+#  TEMPERATURE vs DEPTH space                                                          #
 #                                                                                      #
 #      triple_point  # plot the Al2SiO5 triple point                                   #
 #      granite_solidus  # plot the granite solidus line for wet and dry...             #
