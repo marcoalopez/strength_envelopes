@@ -57,10 +57,81 @@ ss_rate = 1.0e-14  # Reference average shear strain rate in the ductile lithosph
 # ==============================================================================#
 # DO NOT MODIFY THE CODE BELOW - UNLESS YOU KNOW WHAT YOU'RE DOING!
 
-# ==============================================================================#
-# FUNCTIONS TO GENERATE STUFF IN THE DIFFERENTIAL STRENGTH VS DEPTH PLOT
 
-def fric_strength(z, form='thrust', mu=0.73, lamb=0.36, C0=0.0, annot=None):
+def set_plot(a=moho, b=lithosphere_base, c=True):
+    """ Initialize the figure base.
+
+    Parameters
+    ----------
+    a: integer or float
+        the depth of the moho in km.
+
+    b: integer or float
+        the depth of the lithosphere-asthenosphere boundary (LAB).
+
+    c: boolean
+        If True, two plots will appear: a diff. stress vs depth and a T vs depth.
+        If False only a differential stress vs depth plot will be created.
+
+    Examples
+    --------
+    >>> ax1, ax2 = set_plot()
+    >>> ax1 = set_plot(moho, lithosphere_base, False)
+
+    Important note: for correct operation use always ax1 and ax2 as the name
+    of the figure axes
+
+    Return
+    ------
+    the axes of the figures
+    """
+    if c is True:
+        fig = plt.figure(tight_layout=True)
+
+        ax1 = fig.add_subplot(121)
+        plt.gca().invert_yaxis()
+        plt.gca().xaxis.tick_top()
+        plt.gca().xaxis.set_label_position('top')
+        ax1.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
+        ax1.plot([0, 600], [moho, moho], 'k-')
+        ax1.text(0, moho - moho / 90, 'Moho', fontsize=10)
+        ax1.plot([0, 1100], [lithosphere_base, lithosphere_base], 'k-')
+        ax1.text(0, lithosphere_base - lithosphere_base / 90, 'lithosphere base', fontsize=10)
+        ax1.plot(0, 0)
+
+        ax2 = fig.add_subplot(122)
+        plt.gca().invert_yaxis()
+        plt.gca().xaxis.tick_top()
+        plt.gca().xaxis.set_label_position('top')
+        ax2.set(xlabel='Temperature ($\degree C$)')
+        ax2.plot([0, 1100], [moho, moho], 'k-')
+        ax2.text(0, moho - moho / 90, 'Moho', fontsize=10)
+        ax2.plot([0, 1100], [lithosphere_base, lithosphere_base], 'k-')
+        ax2.text(0, lithosphere_base - lithosphere_base / 90, 'lithosphere base', fontsize=10)
+        ax2.plot(0, 0, 'k+')
+
+        return ax1, ax2
+
+    else:
+        fig, ax = plt.subplots()
+
+        plt.gca().invert_yaxis()
+        plt.gca().xaxis.tick_top()
+        plt.gca().xaxis.set_label_position('top')
+        ax.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
+        ax.plot([0, 600], [moho, moho], 'k-')
+        ax.text(0, moho - moho / 90, 'Moho', fontsize=10)
+        ax.plot(0, 0)
+
+        fig.tight_layout()
+
+        return ax
+
+
+# ==============================================================================#
+# FUNCTIONS TO GENERATE DATA IN THE DIFFERENTIAL STRENGTH VS DEPTH PLOT
+
+def fric_strength(z, form='thrust', annot=None, mu=0.73, lamb=0.36, C0=0.0):
     """ Plot frictional slopes in the depth vs differential stress space.
 
     Parameters
@@ -71,15 +142,15 @@ def fric_strength(z, form='thrust', mu=0.73, lamb=0.36, C0=0.0, annot=None):
     form: string
         the type of fault, either 'thrust', 'normal' or 'strike'.
 
+    annot: string
+        automatically annotates fault 'type' or 'mu' and 'lambda' values in a legend.
+
     mu: float between 0 an 1
         Coefficient of friction. Default value 0.73; this is the Rutter and Glover
         (2012) coefficient recalculated from Byerlee (1978) data.
 
     lamb: float between 0 and 1.
         Hubbert-Rubbey coefficient of fluid pressure. Default = 0.36
-
-    annot: string
-        automatically annotates fault 'type' or 'mu' and 'lambda' values in a legend.
 
     C0: integer or float
         Internal cohesion of the rock. Mostly negligible in nature. Default = 0.0
@@ -141,7 +212,7 @@ def fric_strength(z, form='thrust', mu=0.73, lamb=0.36, C0=0.0, annot=None):
     return ax1.plot(x, y)
 
 
-def quartz_dislocation_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d=35, m=0.0):
+def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d=35, m=0.0):
     """ Plot flow law curves for dislocation creep in quartz in the differential stress
     vs depth space. Only post-1992 dislocation creep flow laws are considered.
 
@@ -230,7 +301,7 @@ def quartz_dislocation_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.
     return ax1.plot(diff_stress, depth_values[mask])
 
 
-def olivine_dislocation_creep(T_values, depth_values, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.0, r=0.0):
+def ol_disloc_creep(T_values, depth_values, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.0, r=0.0):
     """ Plot flow law curves for dislocation creep in olivine or peridotite in
     the differential stress vs depth space.
 
@@ -346,7 +417,7 @@ def triple_point(form='Holdoway'):
     return None
 
 
-def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.89, 3.2), mantle_params=(34, 0.0, 3.35)):
+def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=(34, 0.01, 3.35)):
     """ Estimate and plot a steady-state thermal gradient for the continental
     lithosphere considering a two-layer model (crust vs lithospheric mantle).
     It uses the Turcotte and Schubert (1982) model (see thermal_gradient_eq
@@ -370,16 +441,16 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.89, 3.2), mantle_
 
             Default thermal values for the crust:
                 | Jq = 65  # from Jaupart and Mareschal (2007)
-                | A = 0.89  # average value (Rudnick and Gao, 2014)
-                | K = 3.2  # in granite at room T (Clark, 1966)
+                | A = 0.97  # average crust value from Huang et al. (2013)
+                | K = 2.51  # average crust from Sclater et al. (1980)
 
     mantle_params: tuple with three integer or float values
         thermal parameters within the lithospheric mantle (Jq, A, K).
 
             Default thermal values for the lithospheric mantle:
                 | Jq = 34  # from Sclater et al. (1980)
-                | A = 0.0  # from Jaupart and Mareschal (2007)
-                | K = 2.8  # in peridotite at room T (Clark, 1966)
+                | A = 0.01  # from Sclater et al. (1980)
+                | K = 3.35  # in peridotite at room T (Sclater et al., 1980)
 
     Assumptions
     -----------
@@ -393,7 +464,7 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.89, 3.2), mantle_
     (Lagrangian reference frame).
 
     - The thermal properities of the rocks are isotropic.
-    
+
     - The temperature dependence of thermal conductivity is neglected.
 
     Call function
@@ -424,12 +495,9 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.89, 3.2), mantle_
     T_values = np.hstack((T_crust, T_mantle))
 
     print(' ')
-    print('According to this model, the expected T at the base of the lithosphere is',
-          round(T_values[-1] - 273.15, 1), '[deg C]')
-    print('The temperature gradient in the crust is',
-          round(Tg_crust, 2), '[K km-1]')
-    print('The temperature gradient in the lithosphere mantle is',
-          round(Tg_mantle, 2), '[K km-1]')
+    print('According to the model, the expected T at the base of the lithosphere is', round(T_values[-1] - 273.15, 1), '[deg C]')
+    print('The temperature gradient in the crust is', round(Tg_crust, 2), '[K km-1]')
+    print('The temperature gradient in the lithosphere mantle is', round(Tg_mantle, 2), '[K km-1]')
     print(' ')
 
     # plot data in the temperature vs depth space (ax2) [C deg vs km]
@@ -444,9 +512,11 @@ def borehole_data(form='KTB', T_surf=280.65):
 
     Parameters
     ----------
-    form: The source data to plot, either 'KTB', 'Kola', or 'Gravberg'. A string.
-    T_surf: Temperature at surface [K]; this is 7.5 [deg C] or 45.5 [fahrenheit]
-            as measured in the KTB borehole.
+    form: string
+        Borehole data, either 'KTB', 'Kola', or 'Gravberg'
+    T_surf: positive integer or float
+        Temperature at surface [K]; this is 7.5 [deg C] or 45.5 [fahrenheit]
+        as measured in the KTB borehole.
     """
 
     T0 = T_surf - 273.15  # convert [K] to [deg C]
@@ -487,7 +557,7 @@ def borehole_data(form='KTB', T_surf=280.65):
 
 def granite_solidus():
     """ Plot the granite solidus line in the temperature vs depth space.
-    Curve values taken from Johannes and Holtz (1996).
+    P(depth)-T values from Johannes and Holtz (1996).
     """
 
     # convert pressures to depths
@@ -514,7 +584,7 @@ def Goetze_line():
     - g does not vary with depth (constant)
     - Average density for the entire crust is 2750 kg/m**3
     - Average density for the lithospheric mantle is 3330 kg/m**3
-    - Surface elevation equal to 0 km
+    - Surface elevation set to 0 km
     """
     # convert km to meters
     z_moho = moho * 1000
@@ -533,8 +603,8 @@ def Goetze_line():
 
 
 # ==============================================================================#
-# AUXILIARY FUNCTIONS (i.e. functions performing simple tasks using by the functions
-# creating the plots
+# AUXILIARY FUNCTIONS (i.e. functions performing simple tasks using by other
+# functions
 
 
 def Anderson_thrust(depth, mu, C0, lamb):
@@ -623,8 +693,8 @@ def thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
 
     Parameters
     ----------
-    z0: surface elevation [m]
-    z: depth at the base of the model [m]
+    z0: surface elevation [km]
+    z: depth at the base of the model [km]
     T_surf: temperature on the Earth surface [K]
     Jq: average heat flux [mW m**-2]
     A: average heat productivity [microW m**-3]
@@ -642,58 +712,66 @@ def thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
     return T_surf + ((Jq / K) * (z - z0)) - ((A / (2 * K)) * (z - z0)**2)
 
 
-def quartz_piezometer(d, form='Stipp'):
+def quartz_piezometer(grain_size, form='Stipp'):
     """ Apply different quartz piezometric relations to estimate the differential
     stress from 1D apparent grain sizes. The piezometric relations has the
     following expression:
 
-    diff_stress = B d**-p
+    diff_stress = B * grain_size**-p
 
     where diff_stress is the differential stress in [MPa], B is an experimentally
-    derived parameter in [MPa micron**p], d is the aparent grain size in [microns],
-    and p is an experimentally derived exponent which is adimensonal.
+    derived parameter in [MPa micron**p], grain_size is the aparent grain size
+    in [microns], and p is an experimentally derived exponent which is adimensonal.
 
     Parameters
     ----------
-    d: integer or float
+    grain_size: positive integer or float
         the apparent grain size in microns
 
-    form: a string
-        the piezometric relation to be used, either:
+    form: string
+        the piezometric relation, either:
             | 'Cross' and 'Cross2' from Cross et al. (2017)
-            | 'Holyoke' from Holyoke and Kronenberg (2010)
+            | 'Holyoke' from Holyoke and Kronenberg (2010) (Stipp and Tullis corrected)
             | 'Shimizu' from Shimizu (2008)
             | 'Stipp' from Stipp and Tullis (2003)
             | 'Twiss' from Twiss (1977)
 
     References
     ----------
-    TODO
+    | Cross et al. (2017) https://doi.org/10.1002/2017GL073836
+    | De Hoff and Rhines (1968) Quantitative Microscopy. Mcgraw-Hill. New York.
+    | Holyoke and Kronenberg (2010) https://doi.org/10.1016/j.tecto.2010.08.001
+    | Shimizu (2008) https://doi.org/10.1016/j.jsg.2008.03.004
+    | Stipp and Tullis (2003)  https://doi.org/10.1029/2003GL018444
 
     Assumptions
     -----------
     - Independence of temperature (excepting Shimizu's piezometer), total strain,
     flow stress, and water content.
 
-    - The piezometer relations of Stipp and Tullis (2003), Holyoke and Kronenberg (2010),
-    and Cross et al. (2007) requires to enter the grain size as the root mean square
-    apparent grain size calculated from equivalent circular diameters with no stereological
-    correction.
+    - Recrystallized grains are equidimensional or close to equidimensional when
+    using a single section.
 
-    - The piezometer relation of Shimizu (2009) requires to enter the ...abs
-    apparent grain size calculated from equivalent circular diameters with no
+    - The piezometer relations of Stipp and Tullis (2003), Holyoke and Kronenberg (2010),
+    and Cross et al. (2007) requires entering the grain size as the root mean square
+    apparent grain size calculated using equivalent circular diameters with no
     stereological correction.
 
-    - The piezometer of Twiss (1977) requires to enter the mean apparent grain size
-    calculated from equivalent circular diameters with no stereological correction.
-    The function will convert this value to the mean linear intercept grain size
-    according to de Hoff and Rhines (1968) empirical relation...TODO
+    - The piezometer relation of Shimizu (2008) requires entering the grain size
+    as the logarithmic median apparent grain size calculated using equivalent
+    circular diameters with no stereological correction.
 
-    TODO
+    - The piezometer of Twiss (1977) requires entering the logarithmic mean apparent
+    grain size calculated from equivalent circular diameters (ECD) with no stereological
+    correction. The function will convert this value to the mean linear intercept (LI)
+    grain size using the De Hoff and Rhines (1968) empirical relation LI = ECD / sqrt(4/pi)
+    and assuming that LI was originally multiplied by 1.5 (correction factor). Then the
+    final relation would be: LI = (1.5 / sqrt(4/pi)) * ECD
 
     Returns
     -------
-    The differential stress in MPa, a float"""
+    The differential stress in MPa, a floating point number
+    """
 
     if form == 'Stipp':
         B = 669.0
@@ -714,18 +792,29 @@ def quartz_piezometer(d, form='Stipp'):
     elif form == 'Shimizu':
         B = 349.9
         p = 0.8
-        pass
+        T = float(input("Shimizu's paleopiezometer requires setting the temperature [in K] during deformation: "))
+
+        diff_stress = 352 * grain_size**(-0.8) * exp(698 / T)
+
+        print(' ')
+        print('differential stress =', round(diff_stress, 2), 'MPa')
+        return None
 
     elif form == 'Twiss':
-        B = 603.1  # Recalculated from Twiss (1977) using [5.5 * (1000**0.68)] (Note: B is 5.5 when grain size (d) is in mm)
+        B = 5.5  # this B value is for grain size in mm (Twiss, 1977) (Note: this is equivalent to 603.1 when grain size is in microns)
         p = 0.68
-        d = d / (np.sqrt(4 / np.pi))  # convert equivalent circular diameter to linear intercept (de Hoff and Rhines, 1968)
+        grain_size = grain_size / 1000  # convert from microns to mm
+        grain_size = (1.5 / (np.sqrt(4 / np.pi))) * grain_size  # convert ECD to LI
 
     else:
         print('Wrong from. Please choose between valid forms')
         return None
 
-    return B * d**-p
+    diff_stress = B * grain_size**-p
+
+    print(' ')
+    print('differential stress =', round(diff_stress, 2), 'MPa')
+    return None
 
 # ==============================================================================#
 
@@ -735,65 +824,55 @@ T_list_wetGr = np.array([632.203, 635.593, 640.254, 644.915, 647.034, 649.186, 6
 P_list_wetGr = np.array([1297.289, 1040.060, 787.048, 546.687, 468.675, 417.936, 371.570, 332.525, 294.700, 260.535, 234.912,
                          210.509, 186.106, 162.923, 144.620, 122.657, 105.575, 87.273, 68.970, 56.769, 45.177, 37.856, 32.366, 25.045, 18.334, 0.00])
 
+
 texto = """
-#======================================================================================#
-#                                                                                      #
-#                      Welcome to Strength envelopes script v0.1                       #
-#                                                                                      #
-#  The following methods are available:                                                #
-#                                                                                      #
-#  DIFFERENTIAL STRESS vs DEPTH space                                                  #
-#                                                                                      #
-#      fric_strength  # plot friccional slopes                                         #
-#      quartz_dislocation_creep  # plot flow laws for dislocation creep in quartz      #
-#      olivine_dislocation_creep  # plot flow laws for dislocation creep in olivine    #
-#      Goetze_line  # plot the Goetze criterion                                        #
-#                                                                                      #
-#  TEMPERATURE vs DEPTH space                                                          #
-#                                                                                      #
-#      triple_point  # plot the Al2SiO5 triple point                                   #
-#      granite_solidus  # plot the granite solidus line for wet and dry...             #
-#      borehole_data  # plot temperature gradients from superdeep boreholes            #
-#      stable_geotherm  # estimate a stable geotherm based on...TODO                   #
-#                                                                                      #
-#  You can get information on the different methods by:                                #
-#                                                                                      #
-#  (1) typing help(name of the method) in the console. e.g. >>> help(stable_geotherm)  #
-#                                                                                      #
-#  (2) in the Spyder console by writing the name of the method and clicking Ctrl + I   #
-#                                                                                      #
-#  (3) Visit the documentation webpage at http://...TODO                               #
-#                                                                                      #
-#======================================================================================#
+======================================================================================
+Welcome to Strength envelopes script beta version
+======================================================================================
+
+Strength envelopes is a free open-source cross-platform script to generate strength
+envelopes....TODO
+
+METHODS AVAILABLE
+==================  ==================================================================
+Function            Description
+==================  ==================================================================
+fric_strength       Plot frictional slopes
+qtz_disloc_creep    Plot different dislocation creep flow laws for quartz
+ol_disloc_creep     Plot different dislocation creep flow laws for olivine
+Goetze_line         Plot the Goetze criterion
+quartz_piezometer   Estimate the differential stress in quartz using paleopiezometers
+olivine_piezometer  Not yet available
+stable_geotherm     Plot a steady-state thermal gradient (two-layer continental lithosphere)
+granite_solidus     Plot granite solidus lines (wet and dry)
+borehole_data       Plot temperature gradients from superdeep boreholes
+==================  ==================================================================
+
+You can get information on the different methods by:
+    (1) Typing help(name of the function in the console. e.g. >>> help(stable_geotherm)
+    (2) In the Spyder IDE by writing the name of the function and clicking Ctrl+I
+    (3) Visit script documentation at https://github.com/marcoalopez/Strength_envelopes
+
+
+EXAMPLES
+--------
+Plot a frictional slope fro a strike-slip fault down to 15 km depth
+using default coefficients of friction and fluid pressure
+>>> fric_strength(z=15, form='strike')
+
+Estimating a stable geotherm using default parameters
+(storing temperatures and depths)
+>>> T, depths = stable_geotherm()
+
+Plotting a dislocation creep flow law for quartz
+>>> qtz_disloc_creep(z0=10, T_values=T, depth_values=depths, form='Luan')
+
+Plotting a dislocation creep flow law for quartz
+>>> ol_disloc_creep(T_values=T, depth_values=depths, form='Hirth')
 """
 
 print(' ')
 print(texto)
 
-# Initialize the figure base
 
-fig = plt.figure(tight_layout=True)
-
-ax1 = fig.add_subplot(121)
-plt.gca().invert_yaxis()
-plt.gca().xaxis.tick_top()
-plt.gca().xaxis.set_label_position('top')
-ax1.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
-ax1.plot([0, 600], [moho, moho], 'k-')
-ax1.text(0, moho - moho / 90, 'Moho', fontsize=10)
-ax1.plot(0, 0)
-
-ax2 = fig.add_subplot(122)
-plt.gca().invert_yaxis()
-plt.gca().xaxis.tick_top()
-plt.gca().xaxis.set_label_position('top')
-ax2.set(xlabel='Temperature ($\degree C$)')
-ax2.plot([0, 1100], [moho, moho], 'k-')
-ax2.text(0, moho - moho / 90, 'Moho', fontsize=10)
-ax2.plot([0, 1100], [lithosphere_base, lithosphere_base], 'k-')
-ax2.text(0, lithosphere_base - lithosphere_base / 90, 'lithosphere base', fontsize=10)
-
-triple_point(form='Holdoway')
-granite_solidus()
-
-plt.show()
+ax1, ax2 = set_plot()
