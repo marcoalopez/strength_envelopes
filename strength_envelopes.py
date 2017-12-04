@@ -52,13 +52,14 @@ ro_mantle = 3330  # average rock density in the mantle [kg/m**3]
 moho = 34.4  # Average continental crust thickness [km] (Huang et al. 2013)
 lithosphere_base = 81  # Average lithosphere-asthenosphere boundary (LAB) [km] beneath tectonically altered regions (Rychert and Shearer, 2009)
 ss_rate = 1.0e-14  # Reference average shear strain rate in the ductile lithosphere [s**-1]; see Twiss and Moores (2007, p.488)
+plot_type = True  # If True a diferential stress vs depth and T vs depth will appear. If False, only the diff. stress vs depth.
 
 
 # ==============================================================================#
 # DO NOT MODIFY THE CODE BELOW - UNLESS YOU KNOW WHAT YOU'RE DOING!
 
 
-def set_plot(a=moho, b=lithosphere_base, c=True):
+def set_plot(a=moho, b=lithosphere_base, c=plot_type):
     """ Initialize the figure base.
 
     Parameters
@@ -75,7 +76,7 @@ def set_plot(a=moho, b=lithosphere_base, c=True):
 
     Examples
     --------
-    >>> ax1, ax2 = set_plot()
+    >>> ax1, ax2 = set_plot(moho, lithosphere_base, True)
     >>> ax1 = set_plot(moho, lithosphere_base, False)
 
     Important note: for correct operation use always ax1 and ax2 as the name
@@ -95,7 +96,7 @@ def set_plot(a=moho, b=lithosphere_base, c=True):
         ax1.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
         ax1.plot([0, 600], [moho, moho], 'k-')
         ax1.text(0, moho - moho / 90, 'Moho', fontsize=10)
-        ax1.plot([0, 1100], [lithosphere_base, lithosphere_base], 'k-')
+        ax1.plot([0, 600], [lithosphere_base, lithosphere_base], 'k-')
         ax1.text(0, lithosphere_base - lithosphere_base / 90, 'lithosphere base', fontsize=10)
         ax1.plot(0, 0)
 
@@ -104,9 +105,9 @@ def set_plot(a=moho, b=lithosphere_base, c=True):
         plt.gca().xaxis.tick_top()
         plt.gca().xaxis.set_label_position('top')
         ax2.set(xlabel='Temperature ($\degree C$)')
-        ax2.plot([0, 1100], [moho, moho], 'k-')
+        ax2.plot([0, 1300], [moho, moho], 'k-')
         ax2.text(0, moho - moho / 90, 'Moho', fontsize=10)
-        ax2.plot([0, 1100], [lithosphere_base, lithosphere_base], 'k-')
+        ax2.plot([0, 1300], [lithosphere_base, lithosphere_base], 'k-')
         ax2.text(0, lithosphere_base - lithosphere_base / 90, 'lithosphere base', fontsize=10)
         ax2.plot(0, 0, 'k+')
 
@@ -195,6 +196,11 @@ def fric_strength(z, form='thrust', annot=None, mu=0.73, lamb=0.36, C0=0.0):
 
     y = [0, z]
 
+    print('')
+    print('Coefficient of friction =', mu)
+    print('Coefficient of fluid pressure =', lamb)
+    print('Internal cohesion =', C0)
+
     if annot is not None:
         if annot == 'type':
             ax1.plot(x, y, label='{n}'.format(n=form))
@@ -212,7 +218,7 @@ def fric_strength(z, form='thrust', annot=None, mu=0.73, lamb=0.36, C0=0.0):
     return ax1.plot(x, y)
 
 
-def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d=35, m=0.0):
+def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d=35, m=0.0, f=0.0, r=0.0):
     """ Plot flow law curves for dislocation creep in quartz in the differential stress
     vs depth space. Only post-1992 dislocation creep flow laws are considered.
 
@@ -242,15 +248,21 @@ def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d
     m: integer or float.
         Grain size exponent. Default exponent is zero.
 
+    f: integer or float
+        Fugacity of water.
+
+    r: integer or float
+        Water fugacity constant exponent.
+
     Assumptions
     -----------
     - The effect of pressure is ignored since is relatively small at crustal
     depths.
 
-    - The water fugacity is not well constrained for quartz flow laws,
-    therefore the constant exponent is set to zero by default.
+    - Since the water fugacity is not well constrained for quartz flow laws
+    the constant exponent and the water fugacity are both set to zero by default.
 
-    - The effect of partial melt is not considered.
+    - The effect of partial melt is ignored.
 
     Calls function(s)
     -----------------
@@ -292,8 +304,6 @@ def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d
     # set some default values for dislocation creep quartz flow laws
     V = 0  # Activation volume per mol. Negligible at crustal depths.
     P = 0  # Pressure. Negligible at crustal depths.
-    f = 0  # Fugacity of water. Not well constrained.
-    r = 0  # Water fugacity constant exponent. Not well constrained.
 
     # estimate differential stress values
     diff_stress = power_law_creep(ss_rate, A, n, Q, R, T_masked, P, V, d, m, f, r)
@@ -328,9 +338,15 @@ def ol_disloc_creep(T_values, depth_values, form='Hirth', ss_rate=1.0e-14, d=100
     m: integer or float
         Grain size exponent in microns. Default exponent is zero.
 
+    f: integer or float
+        Fugacity of water.
+
+    r: integer or float
+        Water fugacity constant exponent.
+
     Assumptions
     -----------
-    - The effect of partial melt is not considered.
+    - The effect of partial melt is ignored.
 
     Calls function(s)
     -----------------
@@ -441,7 +457,7 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle
 
             Default thermal values for the crust:
                 | Jq = 65  # from Jaupart and Mareschal (2007)
-                | A = 0.97  # average crust value from Huang et al. (2013)
+                | A = 0.97  # average crust from Huang et al. (2013)
                 | K = 2.51  # average crust from Sclater et al. (1980)
 
     mantle_params: tuple with three integer or float values
@@ -488,17 +504,20 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle
     # Generate a mesh of depth values [km]
     depth_values = np.linspace(0, LAB, 2**12)  # density of mesh = 2^12
 
-    # Estimate temperatures
+    # Estimate temperatures (two-layer model)
     T_crust = thermal_gradient_eq(0, depth_values[depth_values <= moho], T_surf, Jq_crust, A_crust, K_crust)
     rf_new = depth_values[depth_values <= moho][-1]
     T_mantle = thermal_gradient_eq(rf_new, depth_values[depth_values > moho], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
     T_values = np.hstack((T_crust, T_mantle))
 
+    T_at_moho_index = int(np.argwhere(depth_values <= moho)[-1])
+
     print(' ')
-    print('According to the model, the expected T at the base of the lithosphere is', round(T_values[-1] - 273.15, 1), '[deg C]')
-    print('The temperature gradient in the crust is', round(Tg_crust, 2), '[K km-1]')
-    print('The temperature gradient in the lithosphere mantle is', round(Tg_mantle, 2), '[K km-1]')
-    print(' ')
+    print('ACCORDING TO THE MODEL:')
+    print('The expected T at the base of the moho is', round(T_values[T_at_moho_index] - 273.15, 1), '[deg C]')
+    print('The expected T at the base of the lithosphere is', round(T_values[-1] - 273.15, 1), '[deg C]')
+    print('The average temperature gradient in the crust is', round(Tg_crust, 2), '[K km-1]')
+    print('The average temperature gradient in the lithosphere mantle is', round(Tg_mantle, 2), '[K km-1]')
 
     # plot data in the temperature vs depth space (ax2) [C deg vs km]
     ax2.plot(T_values - 273.15, depth_values, '-', label='Geothermal gradient')
@@ -794,7 +813,7 @@ def quartz_piezometer(grain_size, form='Stipp'):
         p = 0.8
         T = float(input("Shimizu's paleopiezometer requires setting the temperature [in K] during deformation: "))
 
-        diff_stress = 352 * grain_size**(-0.8) * exp(698 / T)
+        diff_stress = 352 * grain_size**(-0.8) * np.exp(698 / T)
 
         print(' ')
         print('differential stress =', round(diff_stress, 2), 'MPa')
@@ -857,22 +876,26 @@ You can get information on the different methods by:
 EXAMPLES
 --------
 Plot a frictional slope fro a strike-slip fault down to 15 km depth
-using default coefficients of friction and fluid pressure
+using default coefficients of friction and fluid pressure:
 >>> fric_strength(z=15, form='strike')
 
-Estimating a stable geotherm using default parameters
-(storing temperatures and depths)
+Estimating a stable geotherm using default parameters and storing
+temperatures and depths in two different variables:
 >>> T, depths = stable_geotherm()
 
-Plotting a dislocation creep flow law for quartz
+Plotting a dislocation creep flow law for quartz:
 >>> qtz_disloc_creep(z0=10, T_values=T, depth_values=depths, form='Luan')
 
-Plotting a dislocation creep flow law for quartz
+Plotting a dislocation creep flow law for quartz:
 >>> ol_disloc_creep(T_values=T, depth_values=depths, form='Hirth')
 """
 
 print(' ')
 print(texto)
 
-
-ax1, ax2 = set_plot()
+if plot_type is True:
+    ax1, ax2 = set_plot()
+elif plot_type is False:
+    ax1 = set_plot()
+else:
+    print('plot_type has to set as True or False')
