@@ -52,8 +52,11 @@ ro_mantle = 3330  # average rock density in the mantle [kg/m**3]
 moho = 34.4  # Average continental crust thickness [km] (Huang et al. 2013)
 lithosphere_base = 81  # Average lithosphere-asthenosphere boundary (LAB) [km] beneath tectonically altered regions (Rychert and Shearer, 2009)
 ss_rate = 1.0e-14  # Reference average shear strain rate in the ductile lithosphere [s**-1]; see Twiss and Moores (2007, p.488)
-plot_type = True  # If True a diferential stress vs depth and T vs depth will appear. If False, only the diff. stress vs depth.
 
+# Plot type:
+# If plot_type = True two plot will appear: a diferential stress vs depth and  a T vs depth.
+# If plot_type = False, only a diff. stress vs depth will appear.
+plot_type = True
 
 # ==============================================================================#
 # DO NOT MODIFY THE CODE BELOW - UNLESS YOU KNOW WHAT YOU'RE DOING!
@@ -218,7 +221,7 @@ def fric_strength(z, form='thrust', annot=None, mu=0.73, lamb=0.36, C0=0.0):
     return ax1.plot(x, y)
 
 
-def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d=35, m=0.0, f=0.0, r=0.0):
+def qtz_disloc_creep(z0, T_gradient, depths, form='Luan', ss_rate=1.0e-14, d=35, m=0.0, f=0.0, r=0.0):
     """ Plot flow law curves for dislocation creep in quartz in the differential stress
     vs depth space. Only post-1992 dislocation creep flow laws are considered.
 
@@ -227,11 +230,11 @@ def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d
     z0: integer or float
         starting depth [km]
 
-    T_values: array_like
+    T_gradient: array_like
         temperature variation with depth [K]
 
-    depth_values: array_like
-        acorresponding depths [km]
+    depths: array_like
+        array with corresponding depths [km]
 
     form: string
         the flow law default parameters, either 'Luan', 'Gleason', 'Hirth',
@@ -298,8 +301,8 @@ def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d
         print("Wrong form. Please try again using 'Gleason', 'Luan', 'Hirth', 'Holyoke' or 'Rutter'")
 
     # Select a specific range of temperature gradient according to depths z0 and moho
-    mask = np.logical_and(depth_values >= z0, depth_values <= moho)
-    T_masked = T_values[mask]
+    mask = np.logical_and(depths >= z0, depths <= moho)
+    T_masked = T_gradient[mask]
 
     # set some default values for dislocation creep quartz flow laws
     V = 0  # Activation volume per mol. Negligible at crustal depths.
@@ -308,20 +311,20 @@ def qtz_disloc_creep(z0, T_values, depth_values, form='Luan', ss_rate=1.0e-14, d
     # estimate differential stress values
     diff_stress = power_law_creep(ss_rate, A, n, Q, R, T_masked, P, V, d, m, f, r)
 
-    return ax1.plot(diff_stress, depth_values[mask])
+    return ax1.plot(diff_stress, depths[mask])
 
 
-def ol_disloc_creep(T_values, depth_values, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.0, r=0.0):
+def ol_disloc_creep(T_gradient, depths, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.0, r=0.0):
     """ Plot flow law curves for dislocation creep in olivine or peridotite in
     the differential stress vs depth space.
 
     Parameters
     ----------
-    T_values: array_like
+    T_gradient: array_like
         temperature variation with depth [K]
 
-    depth_values: array_like
-        corresponding depths [km]
+    depths: array_like
+        array with corresponding depths [km]
 
     form: string
         the flow law default parameters, either 'Hirth', 'Hirth_dry', 'Karato',
@@ -386,13 +389,14 @@ def ol_disloc_creep(T_values, depth_values, form='Hirth', ss_rate=1.0e-14, d=100
     else:
         print("Wrong form. Please try again using 'Hirth', 'Hirth_dry', 'Karato', 'Karato_dry', or 'Zimmerman'")
 
-    # Select a specific range of temperature gradient according to depths moho and lithosphere_base
-    mask = np.logical_and(depth_values >= moho, depth_values <= lithosphere_base)
-    T_masked = T_values[mask]
+    # Select a specific range of temperature gradient according to
+    # moho and lithosphere_base depths
+    mask = np.logical_and(depths >= moho, depths <= lithosphere_base)
+    T_masked = T_gradient[mask]
 
     # create an array with the corresponding pressures TODO
     P_list = []
-    for z in depth_values[mask]:
+    for z in depths[mask]:
         ro = ((moho / z) * ro_crust) + (((z - moho) / z) * ro_mantle)
         P = ro * g * z
         P_list.append(P)
@@ -401,7 +405,7 @@ def ol_disloc_creep(T_values, depth_values, form='Hirth', ss_rate=1.0e-14, d=100
     # estimate differential stress values
     diff_stress = power_law_creep(ss_rate, A, n, Q, R, T_masked, P_array, V, d, m, f, r)
 
-    return ax1.plot(diff_stress, depth_values[mask])
+    return ax1.plot(diff_stress, depths[mask])
 
 
 # ==============================================================================#
@@ -441,8 +445,8 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle
 
     Parameters
     ----------
-    LAB: a positive integer or float.
-        depth of Lithosphere-Asthenosphere boundary in km (default = 81 km)
+    LAB: positive integer or float.
+        depth of the Lithosphere-Asthenosphere boundary in km (default = 81 km)
 
     T_surf: integer or float
         temperature at surface [K]; default = 280.65; this is 7.5 [deg C]
@@ -502,9 +506,9 @@ def stable_geotherm(LAB=81, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle
     Tg_mantle = Jq_mantle / K_mantle
 
     # Generate a mesh of depth values [km]
-    depth_values = np.linspace(0, LAB, 2**12)  # density of mesh = 2^12
+    depth_values = np.linspace(0, LAB, 2**12)  # density of the mesh = 2^12
 
-    # Estimate temperatures (two-layer model)
+    # Estimate temperature gradient
     T_crust = thermal_gradient_eq(0, depth_values[depth_values <= moho], T_surf, Jq_crust, A_crust, K_crust)
     rf_new = depth_values[depth_values <= moho][-1]
     T_mantle = thermal_gradient_eq(rf_new, depth_values[depth_values > moho], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
@@ -850,21 +854,24 @@ Welcome to Strength envelopes script beta version
 ======================================================================================
 
 Strength envelopes is a free open-source cross-platform script to generate strength
-envelopes....TODO
+envelopes.
 
 METHODS AVAILABLE
 ==================  ==================================================================
-Function            Description
+Main Functions      Description
 ==================  ==================================================================
 fric_strength       Plot frictional slopes
-qtz_disloc_creep    Plot different dislocation creep flow laws for quartz
-ol_disloc_creep     Plot different dislocation creep flow laws for olivine
+stable_geotherm     Estimate and plot a steady-state geothermal gradient
+qtz_disloc_creep    Plot dislocation creep flow laws for quartz
+ol_disloc_creep     Plot dislocation creep flow laws for olivine
+==================  ==================================================================
+Other functions
+==================  ==================================================================
 Goetze_line         Plot the Goetze criterion
-quartz_piezometer   Estimate the differential stress in quartz using paleopiezometers
-olivine_piezometer  Not yet available
-stable_geotherm     Plot a steady-state thermal gradient (two-layer continental lithosphere)
 granite_solidus     Plot granite solidus lines (wet and dry)
 borehole_data       Plot temperature gradients from superdeep boreholes
+quartz_piezometer   Estimate the differential stress in quartz using paleopiezometers
+olivine_piezometer  Not yet available
 ==================  ==================================================================
 
 You can get information on the different methods by:
