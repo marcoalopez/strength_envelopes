@@ -79,8 +79,8 @@ def init_plot(double_plot=True, moho=moho, LAB=LAB):
     >>> fig (ax1, ax2) = init_plot()
     >>> fig, ax1 = set_plot(doble_plot=False)
 
-    Important note: for a correct operation you must use ax1 and ax2 as the name
-    of the figure axes
+    Important note: for a correct use of the script you must use ax1 and ax2
+    as the name of the figure axes
 
     Return
     ------
@@ -132,29 +132,29 @@ def init_plot(double_plot=True, moho=moho, LAB=LAB):
 # ==============================================================================#
 # FUNCTIONS TO GENERATE DATA IN THE DIFFERENTIAL STRENGTH VS DEPTH PLOT
 
-def fric_strength(z=15, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0):
+def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **kwargs):
     """ Plot frictional slopes in the depth vs differential stress space.
 
     Parameters
     ----------
-    z: integer, float
-        maximum depth [km]. Default = 15 km
+    z: integer or float
+        maximum depth [km].
 
     fault: string
         the type of fault, either 'thrust', 'normal' or 'strike'.
 
-    annot: string
+    annot: string, optional
         automatically annotates fault 'type' or 'mu' and 'lambda' values in a legend.
 
-    mu: float between 0 an 1
+    mu: float between 0 an 1, optional
         Coefficient of friction. Default value 0.73; this is the Rutter and Glover
         (2012) coefficient recalculated from Byerlee (1978) data.
 
-    lamb: float between 0 and 1
+    lamb: float between 0 and 1, optional
         Hubbert-Rubbey coefficient of fluid pressure. Zero is for dry conditions.
         Default = 0.36
 
-    C0: integer, float
+    C0: integer or float, optional
         Internal cohesion of the rock. Mostly negligible in nature. Default = 0.0
         This parameter can be used as the frictional cohesive strenght too.
 
@@ -217,10 +217,10 @@ def fric_strength(z=15, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0):
             ax1.legend(fontsize=9)
             return None
 
-    return ax1.plot(x, y)
+    return ax1.plot(x, y, **kwargs)
 
 
-def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=(34, 0.01, 3.35)):
+def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=(34, 0.01, 3.35), **kwargs):
     """ Estimate and plot a steady-state thermal gradient for the continental
     lithosphere considering a two-layer model (crust vs lithospheric mantle).
     It uses the Turcotte and Schubert (1982) model (see thermal_gradient_eq
@@ -228,14 +228,14 @@ def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantl
 
     Parameters
     ----------
-    LAB: positive integer or float.
+    LAB: positive integer or float, optional
         depth of the Lithosphere-Asthenosphere boundary in km
 
-    T_surf: positive integer or float
+    T_surf: positive integer or float, optional
         temperature at surface [K]; default = 280.65; this is 7.5 [deg C]
         or 45.5 [fahrenheit] as measured in the KTB borehole.
 
-    crust_params: tuple with three integer or float values
+    crust_params: tuple with three integer or float values, optional
             | Jq - Average heat flux in the continental crust [mW m**-2]
             | A -  Average rate of radiogenic heat production [microW m**-3]
             | K -  Coefficient of thermal conductivity [W m**-1 K**-1]
@@ -245,7 +245,7 @@ def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantl
                 | A = 0.97  # average crust from Huang et al. (2013)
                 | K = 2.51  # average crust from Sclater et al. (1980)
 
-    mantle_params: tuple with three integer or float values
+    mantle_params: tuple with three integer or float values, optional
         thermal parameters within the lithospheric mantle (Jq, A, K).
 
             Default thermal values for the lithospheric mantle:
@@ -275,7 +275,7 @@ def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantl
     Returns
     -------
     Two 1D numpy arrays. One containing the variation of temperature [K]
-    with depth and the other containing the corresponding depths [m].
+    with depth and the other the corresponding depths [m].
     """
 
     # extract thermal parameters
@@ -291,8 +291,8 @@ def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantl
 
     # Estimate stable geotherm
     T_crust = thermal_gradient_eq(0, depth_values[depth_values <= moho], T_surf, Jq_crust, A_crust, K_crust)
-    rf_new = depth_values[depth_values <= moho][-1]
-    T_mantle = thermal_gradient_eq(rf_new, depth_values[depth_values > moho], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
+    new_ref_frame = depth_values[depth_values <= moho][-1]
+    T_mantle = thermal_gradient_eq(new_ref_frame, depth_values[depth_values > moho], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
     T_values = np.hstack((T_crust, T_mantle))
 
     T_at_moho_index = int(np.argwhere(depth_values <= moho)[-1])
@@ -305,12 +305,12 @@ def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantl
     print('The average temperature gradient in the lithosphere mantle is', round(Tg_mantle, 2), '[K km-1]')
 
     # plot data in the temperature vs depth space (ax2) [C deg vs km]
-    ax2.plot(T_values - 273.15, depth_values, '-', label='Geothermal gradient')
+    ax2.plot(T_values - 273.15, depth_values, '-', label='Geothermal gradient', **kwargs)
 
     return T_values, depth_values
 
 
-def qtz_disloc_creep(z0, geotherm, form='Luan', strain_rate=1.0e-14, d=35, m=0.0, f=0.0, r=0.0):
+def qtz_disloc_creep(z0, geotherm, form='Luan', strain_rate=1.0e-14, d=35, m=0.0, f=0.0, r=0.0, **kwargs):
     """ Plot flow law curves for dislocation creep in quartz in the differential stress
     vs depth space. Only post-1992 dislocation creep flow laws are considered.
 
@@ -322,25 +322,25 @@ def qtz_disloc_creep(z0, geotherm, form='Luan', strain_rate=1.0e-14, d=35, m=0.0
     geotherm: array_like (2-dimensional)
         temperature variation with depth [K] and corresponding depths [km]
 
-    form: string
+    form: string, optional
         the flow law default parameters, either 'Luan', 'Gleason', 'Hirth',
         'Holyoke', or Rutter'. Default='Hirth'
 
-    ss_rate: float
+    ss_rate: float, optional
         strain rate [s**-1]. Assumed average shear strain rate in the ductile
         lithosphere = 1.0e-14
 
-    d: integer, float
+    d: integer or float, optional
         Grain size [microns]. Default value is 35. You can ignore this value as
         long as the grain size exponent [m] is equal to zero.
 
-    m: integer, float.
+    m: integer or float, optional
         Grain size exponent. Default = 0
 
-    f: integer, float
+    f: integer or float, optional
         Water fugacity. Default = 0
 
-    r: integer, float
+    r: integer or float, optional
         Water fugacity constant exponent. Default = 0
 
     Assumptions
@@ -392,14 +392,14 @@ def qtz_disloc_creep(z0, geotherm, form='Luan', strain_rate=1.0e-14, d=35, m=0.0
     mask = np.logical_and(depths >= z0, depths <= moho)
     T_masked = T_gradient[mask]
 
-    # fix some values for dislocation creep quartz flow laws
+    # fix some values for applying the dislocation creep quartz flow laws
     V = 0  # Activation volume per mol. Negligible at crustal depths.
     P = 0  # Pressure. Negligible at crustal depths.
 
     # estimate differential stress values
     diff_stress = power_law_creep(ss_rate, A, n, Q, R, T_masked, P, V, d, m, f, r)
 
-    return ax1.plot(diff_stress, depths[mask])
+    return ax1.plot(diff_stress, depths[mask], **kwargs)
 
 
 def ol_disloc_creep(geotherm, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.0, r=0.0):
@@ -411,25 +411,25 @@ def ol_disloc_creep(geotherm, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.
     geotherm: array_like (2-dimensional)
         temperature variation with depth [K] and corresponding depths [km]
 
-    form: string
+    form: string, optional
         the flow law default parameters, either 'Hirth', 'Hirth_dry', 'Karato',
         'Karato_dry', or 'Zimmerman'. Default='Hirth'
 
-    ss_rate: float
+    ss_rate: float, optional
         strain rate [s**-1]. Assumed average shear strain rate in the ductile
         lithosphere = 1.0e-14
 
-    d: integer or float
+    d: integer or float, optional
         Grain size [microns]. Default value is 1 mm. You can ignore this value as
         long as the grain size exponent [m] is equal to zero.
 
-    m: integer or float
+    m: integer or float, optional
         Grain size exponent in microns. Default exponent is zero.
 
-    f: integer or float
+    f: integer or float, optional
         Fugacity of water.
 
-    r: integer or float
+    r: integer or float, optional
         Water fugacity constant exponent.
 
     Assumptions
@@ -527,14 +527,14 @@ def triple_point(t_point='Holdoway'):
     return None
 
 
-def borehole_data(form='KTB', T_surf=280.65):
+def borehole_data(borehole='KTB', T_surf=280.65):
     """ Plot thermal gradients from superdeep boreholes and project them down
     to the Moho discotinuity.
 
     Parameters
     ----------
-    form: string
-        Borehole data, either 'KTB', 'Kola', or 'Gravberg'
+    borehole: string
+        Name of the borehole data, either 'KTB', 'Kola', or 'Gravberg'
 
     T_surf: positive integer or float
         Temperature at surface [K]; this is 7.5 [deg C] or 45.5 [fahrenheit]
@@ -543,7 +543,7 @@ def borehole_data(form='KTB', T_surf=280.65):
 
     T0 = T_surf - 273.15  # convert [K] to [deg C]
 
-    if form == 'KTB':
+    if borehole == 'KTB':
         # Temperature gradient [K/km] (Emmermann and Lauterjung, 1997)
         T_KTB_grad = 27.5
         max_depth = 9.101  # [km]
@@ -552,7 +552,7 @@ def borehole_data(form='KTB', T_surf=280.65):
         ax2.plot([max_depth * T_KTB_grad + T0, moho * T_KTB_grad],
                  [max_depth, moho], '--')
 
-    elif form == 'Kola':
+    elif borehole == 'Kola':
         # Temperature gradient [K/km] (Smithson et al., 2000)
         T_Kola_Grad = 15.5
         max_depth = 12.262  # [km]
@@ -561,7 +561,7 @@ def borehole_data(form='KTB', T_surf=280.65):
         ax2.plot([max_depth * T_Kola_Grad + T0, moho * T_Kola_Grad],
                  [max_depth, moho], '--')
 
-    elif form == 'Gravberg':
+    elif borehole == 'Gravberg':
         # Temperature gradient [K/km] (Lund and Zoback, 1999)
         T_Baltic_Grad = 16.1
         max_depth = 6.779  # [km]
@@ -572,12 +572,12 @@ def borehole_data(form='KTB', T_surf=280.65):
 
     else:
         print(' ')
-        print("Wrong form. Please try again using 'KTB', 'Kola' or 'Gravberg'")
+        print("Wrong borehole name. Please use 'KTB', 'Kola' or 'Gravberg'")
 
     return None
 
 
-def granite_solidus():
+def granite_solidus(**kwargs):
     """ Plot the granite solidus line in the temperature vs depth space.
     P(depth)-T values from Johannes and Holtz (1996).
     """
@@ -591,19 +591,22 @@ def granite_solidus():
     T_solidus_moho = (P_moho + 9551.25) / 9.93
 
     # plot
-    ax2.plot(T_list_wetGr, depths_wet_Gr, 'k--')
-    ax2.plot([961.86, T_solidus_moho], [0.0, moho], 'k--')
+    ax2.plot(T_list_wetGr, depths_wet_Gr, 'k--', **kwargs)
+    ax2.plot([961.86, T_solidus_moho], [0.0, moho], 'k--', **kwargs)
+
+    print('')
+    print('Values from Johannes and Holtz (1996)')
 
     return None
 
 
-def Goetze_line():
+def Goetze_line(**kwargs):
     """Plot the Goetze's criterion (Briegel & Goetze, 1978) in the differential
     stress vs deep space.
 
     Assumptions
     -----------
-    - g does not vary with depth (constant)
+    - g does not vary with depth (constant value)
     - Average density for the entire crust is 2750 kg/m**3
     - Average density for the lithospheric mantle is 3330 kg/m**3
     - Surface elevation set to 0 km
@@ -621,11 +624,11 @@ def Goetze_line():
     lithos_base_P = (ro * g * z_lithos) / 1e6
     lithos_P = [0, moho_P, lithos_base_P]
 
-    return ax1.plot(lithos_P, depths, 'k--', label="Goetze's criterion'")
+    return ax1.plot(lithos_P, depths, 'k--', label="Goetze's criterion'", **kwargs)
 
 
 # ==============================================================================#
-# AUXILIARY FUNCTIONS (i.e. functions performing simple tasks using by other
+# AUXILIARY FUNCTIONS (i.e. functions performing single tasks using by other
 # functions
 
 
@@ -779,17 +782,18 @@ EXAMPLES
 --------
 Plot a frictional slope for a strike-slip fault down to 15 km depth
 using default coefficients of friction and fluid pressure:
->>> fric_strength(z=15, form='strike')
+>>> fric_strength(z=15, fault='strike')
+>>> fric_strength(z=15, fault='normal', linestyle='--', color='C5', linewidth=2)
 
 Estimating a stable geotherm using default parameters and storing
-temperatures and depths in two different variables:
->>> model_1 = stable_geotherm()
+temperatures and corresponding depths in a variable:
+>>> my_model = stable_geotherm()
 
 Plotting a dislocation creep flow law for quartz:
->>> qtz_disloc_creep(z0=10, geotherm=model_1, form='Luan')
+>>> qtz_disloc_creep(z0=10, geotherm=my_model, form='Luan')
 
 Plotting a dislocation creep flow law for olivine:
->>> ol_disloc_creep(geotherm=model_1, form='Hirth')
+>>> ol_disloc_creep(geotherm=my_model, form='Hirth')
 """
 
 print(' ')
