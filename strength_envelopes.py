@@ -220,7 +220,7 @@ def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **k
     return ax1.plot(x, y, **kwargs)
 
 
-def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=(34, 0.01, 3.35), **kwargs):
+def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=(34, 0.01, 3.35), **kwargs):
     """ Estimate and plot a steady-state thermal gradient for the continental
     lithosphere considering a two-layer model (crust vs lithospheric mantle).
     It uses the Turcotte and Schubert (1982) model (see thermal_gradient_eq
@@ -228,9 +228,6 @@ def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantl
 
     Parameters
     ----------
-    LAB: positive integer or float, optional
-        depth of the Lithosphere-Asthenosphere boundary in km
-
     T_surf: positive integer or float, optional
         temperature at surface [K]; default = 280.65; this is 7.5 [deg C]
         or 45.5 [fahrenheit] as measured in the KTB borehole.
@@ -300,9 +297,9 @@ def stable_geotherm(LAB=LAB, T_surf=280.65, crust_params=(65, 0.97, 2.51), mantl
     print(' ')
     print('ACCORDING TO THE MODEL:')
     print('The expected T at the base of the moho is', round(T_values[T_at_moho_index] - 273.15, 1), '[deg C]')
-    print('The expected T at the base of the lithosphere is', round(T_values[-1] - 273.15, 1), '[deg C]')
+    print('The expected T at the lithosphere-asthenosphere boundary is', round(T_values[-1] - 273.15, 1), '[deg C]')
     print('The average temperature gradient in the crust is', round(Tg_crust, 2), '[K km-1]')
-    print('The average temperature gradient in the lithosphere mantle is', round(Tg_mantle, 2), '[K km-1]')
+    print('The average temperature gradient in the lithospheric mantle is', round(Tg_mantle, 2), '[K km-1]')
 
     # plot data in the temperature vs depth space (ax2) [C deg vs km]
     ax2.plot(T_values - 273.15, depth_values, '-', label='Geothermal gradient', **kwargs)
@@ -502,7 +499,7 @@ def ol_disloc_creep(geotherm, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.
 # FUNCTIONS TO GENERATE ADDITIONAL FEATURES
 
 
-def triple_point(t_point='Holdoway'):
+def plot_triple_point(t_point='Holdoway'):
     """ Plot the Al2SiO5 triple point in the depth vs temperature space"""
 
     if t_point == 'Holdoway':
@@ -527,7 +524,7 @@ def triple_point(t_point='Holdoway'):
     return None
 
 
-def borehole_data(borehole='KTB', T_surf=280.65):
+def plot_borehole_data(borehole='KTB', T_surf=280.65):
     """ Plot thermal gradients from superdeep boreholes and project them down
     to the Moho discotinuity.
 
@@ -577,7 +574,7 @@ def borehole_data(borehole='KTB', T_surf=280.65):
     return None
 
 
-def granite_solidus(**kwargs):
+def plot_granite_solidus(**kwargs):
     """ Plot the granite solidus line in the temperature vs depth space.
     P(depth)-T values from Johannes and Holtz (1996).
     """
@@ -600,7 +597,7 @@ def granite_solidus(**kwargs):
     return None
 
 
-def Goetze_line(**kwargs):
+def plot_goetze_line(**kwargs):
     """Plot the Goetze's criterion (Briegel & Goetze, 1978) in the differential
     stress vs deep space.
 
@@ -755,22 +752,22 @@ Strength envelopes is a free open-source cross-platform script to generate stren
 envelopes.
 
 METHODS AVAILABLE
-==================  ==================================================================
-Main Functions      Description
-==================  ==================================================================
-fric_strength       Plot frictional slopes
-stable_geotherm     Estimate and plot a steady-state geothermal gradient
-qtz_disloc_creep    Plot dislocation creep flow laws for quartz
-ol_disloc_creep     Plot dislocation creep flow laws for olivine
+====================  ================================================================
+Main Functions        Description
+====================  ================================================================
+fric_strength         Plot frictional slopes
+stable_geotherm       Estimate and plot a steady-state geothermal gradient
+qtz_disloc_creep      Plot dislocation creep flow laws for quartz
+ol_disloc_creep       Plot dislocation creep flow laws for olivine
 
-==================  ==================================================================
+======================  ==============================================================
 Other functions
-==================  ==================================================================
-triple_point        Plot the Al2SiO5 triple point (Holdoway or Pattison)
-Goetze_line         Plot the Goetze criterion
-granite_solidus     Plot granite solidus lines (wet and dry)
-borehole_data       Plot temperature gradients from superdeep boreholes
-==================  ==================================================================
+====================  ================================================================
+plot_triple_point     Plot the Al2SiO5 triple point (Holdoway or Pattison)
+plot_goetze_line      Plot the Goetze criterion
+plot_granite_solidus  Plot granite solidus lines (wet and dry)
+plot_borehole_data    Plot temperature gradients from superdeep boreholes
+====================  ================================================================
 
 You can get information on the different methods by:
     (1) Typing help(name of the function in the console. e.g. >>> help(stable_geotherm)
@@ -790,7 +787,7 @@ temperatures and corresponding depths in a variable:
 >>> my_model = stable_geotherm()
 
 Plotting a dislocation creep flow law for quartz:
->>> qtz_disloc_creep(z0=10, geotherm=my_model, form='Luan')
+>>> qtz_disloc_creep(z0=10, geotherm=my_model, form='Hirth')
 
 Plotting a dislocation creep flow law for olivine:
 >>> ol_disloc_creep(geotherm=my_model, form='Hirth')
