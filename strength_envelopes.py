@@ -50,7 +50,7 @@ R = 8.3144598  # universal gas constant [J mol**-1 K**-1]
 # Mechanical
 ro_crust = 2750  # average rock density in the crust [kg/m**3]
 ro_mantle = 3330  # average rock density in the mantle [kg/m**3]
-ss_rate = 1.0e-14  # Reference average shear strain rate in the ductile lithosphere [s**-1]; see Twiss and Moores (2007, p.488)
+ref_sr = 1.0e-14  # Reference average shear strain rate in the ductile lithosphere [s**-1]; see Twiss and Moores (2007, p.488)
 moho = 34.4  # Average continental crust thickness [km] (Huang et al. 2013)
 LAB = 81  # Average lithosphere-asthenosphere boundary (LAB) [km] beneath tectonically altered regions (Rychert and Shearer, 2009)
 
@@ -130,7 +130,7 @@ def init_plot(double_plot=True, moho=moho, LAB=LAB):
 
 
 # ==============================================================================#
-# FUNCTIONS TO GENERATE DATA IN THE DIFFERENTIAL STRENGTH VS DEPTH PLOT
+# FUNCTIONS TO GENERATE CURVES IN THE DIFFERENTIAL STRESS VS DEPTH PLOT
 
 def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **kwargs):
     """ Plot frictional slopes in the depth vs differential stress space.
@@ -307,7 +307,7 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=
     return T_values, depth_values
 
 
-def qtz_disloc_creep(z0, geotherm, form='Luan', strain_rate=1.0e-14, d=35, m=0.0, f=0.0, r=0.0, **kwargs):
+def qtz_disloc_creep(z0, geotherm, law='HTD', strain_rate=ref_sr, d=35, m=0.0, fug=0.0, r=0.0, **kwargs):
     """ Plot flow law curves for dislocation creep in quartz in the differential stress
     vs depth space. Only post-1992 dislocation creep flow laws are considered.
 
@@ -319,11 +319,11 @@ def qtz_disloc_creep(z0, geotherm, form='Luan', strain_rate=1.0e-14, d=35, m=0.0
     geotherm: array_like (2-dimensional)
         temperature variation with depth [K] and corresponding depths [km]
 
-    form: string, optional
-        the flow law default parameters, either 'Luan', 'Gleason', 'Hirth',
-        'Holyoke', or Rutter'. Default='Hirth'
+    law: string, optional
+        the flow law default parameters, either 'HTD', 'LP_wet', 'GT_wet',
+        'HK_wet', or 'RB_wet'. Default='HTD'
 
-    ss_rate: float, optional
+    strain_rate: float, optional
         strain rate [s**-1]. Assumed average shear strain rate in the ductile
         lithosphere = 1.0e-14
 
@@ -334,7 +334,7 @@ def qtz_disloc_creep(z0, geotherm, form='Luan', strain_rate=1.0e-14, d=35, m=0.0
     m: integer or float, optional
         Grain size exponent. Default = 0
 
-    f: integer or float, optional
+    fug: integer or float, optional
         Water fugacity. Default = 0
 
     r: integer or float, optional
@@ -357,62 +357,37 @@ def qtz_disloc_creep(z0, geotherm, form='Luan', strain_rate=1.0e-14, d=35, m=0.0
     # extract temperature gradient and depths
     T_gradient, depths = geotherm
 
-    if form == 'Hirth':  # from Hirth et al. (2001)
-        n = 4.0  # stress exponent
-        Q = 135000  # activation energy [J mol**-1]
-        A = 10**(-11.2)  # material parameter [MPa**-n s**-1]
+    # extract experimentally derived values for dislocation creep quartz flow law
+    n, Q, A = get_quartz_values(law)
 
-    elif form == 'Luan':  # from Luan and Paterson (1992)
-        n = 4.0
-        Q = 152000
-        A = 10**(-7.2)
-
-    elif form == 'Gleason':  # from Gleason and Tullis (1995). Wet quartzite.
-        n = 4.0
-        Q = 223000
-        A = 1.1e-4
-
-    elif form == 'Holyoke':  # Holyoke and Kronenberg (2010), based on Gleason and Tullis (1995) data
-        n = 4.0
-        Q = 223000
-        A = 5.1e-4
-
-    elif form == 'Rutter':  # from Rutter and Brodie (2004). Wet quartzite, minor grain boundary sliding inferred.
-        n = 2.97
-        Q = 242000
-        A = 10**(-4.93)
-
-    else:
-        print("Wrong form. Please try again using 'Gleason', 'Luan', 'Hirth', 'Holyoke' or 'Rutter'")
+    # fix some values for dislocation creep quartz flow laws
+    V = 0  # Activation volume per mol. Negligible at crustal depths.
+    P = 0  # Pressure. Negligible at crustal depths.
 
     # Select a specific range of temperature gradient according to depths z0 and moho
     mask = np.logical_and(depths >= z0, depths <= moho)
     T_masked = T_gradient[mask]
 
-    # fix some values for applying the dislocation creep quartz flow laws
-    V = 0  # Activation volume per mol. Negligible at crustal depths.
-    P = 0  # Pressure. Negligible at crustal depths.
-
     # estimate differential stress values
-    diff_stress = power_law_creep(ss_rate, A, n, Q, R, T_masked, P, V, d, m, f, r)
+    diff_stress = power_law_creep(strain_rate, A, n, Q, R, T_masked, P, V, d, m, fug, r)
 
     return ax1.plot(diff_stress, depths[mask], **kwargs)
 
 
-def ol_disloc_creep(geotherm, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.0, r=0.0):
+def ol_disloc_creep(geotherm, law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, fug=0.0, r=0.0, **kwargs):
     """ Plot flow law curves for dislocation creep in olivine or peridotite in
     the differential stress vs depth space.
 
     Parameters
     ----------
     geotherm: array_like (2-dimensional)
-        temperature variation with depth [K] and corresponding depths [km]
+        temperature variation wth depth [K] and corresponding depths [km]
 
-    form: string, optional
-        the flow law default parameters, either 'Hirth', 'Hirth_dry', 'Karato',
-        'Karato_dry', or 'Zimmerman'. Default='Hirth'
+    law: string, optional
+        the flow law default parameters, either 'HK_wet', 'HK_dry', 'KJ_wet',
+        'KJ_dry', or 'ZK_dry'. Default='HK_dry'
 
-    ss_rate: float, optional
+    strain_rate: float, optional
         strain rate [s**-1]. Assumed average shear strain rate in the ductile
         lithosphere = 1.0e-14
 
@@ -423,7 +398,7 @@ def ol_disloc_creep(geotherm, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.
     m: integer or float, optional
         Grain size exponent in microns. Default exponent is zero.
 
-    f: integer or float, optional
+    fug: integer or float, optional
         Fugacity of water.
 
     r: integer or float, optional
@@ -437,51 +412,22 @@ def ol_disloc_creep(geotherm, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.
 
     Calls function(s)
     -----------------
+    get_olivine_values
     power_law_creep
     """
 
     # extract temperature gradient and depths
     T_gradient, depths = geotherm
 
-    if form == 'Hirth':  # from Hirth and Kohlstedt (2003). Wet Olivine
-        n = 3.5  # stress exponent
-        Q = 520000  # activation energy [J mol**-1]
-        A = 10**(3.2)  # material parameter [MPa**-n s**-1]
-        V = 2.2e-05  # activation volume per mol [m**3 mol**-1]
+    # extract experimentally derived values for dislcation creep olivine flow law
+    n, Q, A, V = get_olivine_values(law)
 
-    elif form == 'Hirth_dry':  # from Hirth and Kohlstedt (2003). Dry Olivine
-        n = 3.5
-        Q = 530000
-        A = 10**(5.0)
-        V = 1.8e-05
-
-    elif form == 'Karato':  # from Karato and Jung (2003). Wet olivine
-        n = 3.0
-        Q = 470000
-        A = 10**(2.9)
-        V = 2.4e-05
-
-    elif form == 'Karato_dry':  # from Karato and Jung (2003). Dry olivine
-        n = 3.0
-        Q = 510000
-        A = 10**(6.1)
-        V = 1.4e-05
-
-    elif form == 'Zimmerman':  # from Zimmerman and Kohlstedt (2004). Dry peridotite
-        n = 4.3
-        Q = 550000
-        A = 10**(4.8)
-        V = 0.0  # activation volume per mol not provided!
-
-    else:
-        print("Wrong form. Please try again using 'Hirth', 'Hirth_dry', 'Karato', 'Karato_dry', or 'Zimmerman'")
-
-    # Select a specific range of temperature gradient according to
-    # moho and lithosphere_base depths
+    # Select a specific range of temperature gradient according to moho and
+    # LAB depths
     mask = np.logical_and(depths >= moho, depths <= LAB)
     T_masked = T_gradient[mask]
 
-    # create an array with the corresponding pressures
+    # create a list with the corresponding pressures
     P_list = []
     for z in depths[mask]:
         ro = ((moho / z) * ro_crust) + (((z - moho) / z) * ro_mantle)
@@ -490,9 +436,107 @@ def ol_disloc_creep(geotherm, form='Hirth', ss_rate=1.0e-14, d=1000, m=0.0, f=0.
     P_array = np.array(P_list)
 
     # estimate differential stress values
-    diff_stress = power_law_creep(ss_rate, A, n, Q, R, T_masked, P_array, V, d, m, f, r)
+    diff_stress = power_law_creep(strain_rate, A, n, Q, R, T_masked, P_array, V, d, m, fug, r)
 
-    return ax1.plot(diff_stress, depths[mask])
+    return ax1.plot(diff_stress, depths[mask], **kwargs)
+
+# ==============================================================================#
+# FUNCTIONS WITH EXPERIMENTALLY DERIVED PARAMETERS
+
+
+def get_quartz_values(law):
+    """Contain the experimentally derived values of different quartz flow laws
+    and return the required.
+
+    law: string, optional
+        the flow law parameters to use, either...
+
+    Returns
+    -------
+    The stress exponent (n), the activation energy (Q) [J mol**-1], the material
+    constant (A) [MPa**-n s**-1]
+    """
+
+    if law == 'HTD':  # from Hirth et al. (2001)
+        n = 4.0  # stress exponent
+        Q = 135000  # activation energy [J mol**-1]
+        A = 10**(-11.2)  # material parameter [MPa**-n s**-1]
+
+    elif law == 'LP_wet':  # from Luan and Paterson (1992)
+        n = 4.0
+        Q = 152000
+        A = 10**(-7.2)
+
+    elif law == 'GT_wet':  # from Gleason and Tullis (1995). Wet quartzite.
+        n = 4.0
+        Q = 223000
+        A = 1.1e-4
+
+    elif law == 'HK_wet':  # Holyoke and Kronenberg (2010), based on Gleason and Tullis (1995) data
+        n = 4.0
+        Q = 223000
+        A = 5.1e-4
+
+    elif law == 'RB_wet':  # from Rutter and Brodie (2004). Wet quartzite, minor grain boundary sliding inferred.
+        n = 2.97
+        Q = 242000
+        A = 10**(-4.93)
+
+    else:
+        print("Wrong form. Please try again using 'Gleason', 'Luan', 'Hirth', 'Holyoke' or 'Rutter'")
+        return None
+
+    return n, Q, A
+
+
+def get_olivine_values(law):
+    """Contain the experimentally derived values of different olivine flow laws
+    and return the required.
+
+    law: string, optional
+        the flow law default parameters
+
+    Returns
+    -------
+    The stress exponent (n), the activation energy (Q) [J mol**-1], the material
+    constant (A) [MPa**-n s**-1], and the activation volume per mol (V) [m**3 mol**-1]
+    """
+
+    if law == 'HK_wet':  # from Hirth and Kohlstedt (2003). Wet Olivine
+        n = 3.5  # stress exponent
+        Q = 520000  # activation energy [J mol**-1]
+        A = 10**(3.2)  # material parameter [MPa**-n s**-1]
+        V = 2.2e-05  # activation volume per mol [m**3 mol**-1]
+
+    elif law == 'HK_dry':  # from Hirth and Kohlstedt (2003). Dry Olivine
+        n = 3.5
+        Q = 530000
+        A = 10**(5.0)
+        V = 1.8e-05
+
+    elif law == 'KJ_wet':  # from Karato and Jung (2003). Wet olivine
+        n = 3.0
+        Q = 470000
+        A = 10**(2.9)
+        V = 2.4e-05
+
+    elif law == 'KJ_dry':  # from Karato and Jung (2003). Dry olivine
+        n = 3.0
+        Q = 510000
+        A = 10**(6.1)
+        V = 1.4e-05
+
+    elif law == 'ZK_dry':  # from Zimmerman and Kohlstedt (2004). Dry peridotite
+        n = 4.3
+        Q = 550000
+        A = 10**(4.8)
+        V = 0.0  # activation volume per mol not provided!
+
+    else:
+        print("Wrong form. Please try again using 'HK_wet', 'HK_dry', 'KJ_wet', 'KJ_dry', or 'ZK_dry'")
+        return None
+
+    return n, Q, A, V
 
 
 # ==============================================================================#
@@ -519,7 +563,7 @@ def plot_triple_point(t_point='Holdoway'):
     ax2.plot([T, T_And_Sill], [depth, 0], 'k-')  # And-Sill line
     ax2.plot([T, 696.85], [depth, moho], 'k-')  # Ky-Sill line
     ax2.annotate('And', xy=(375, 5))
-    ax2.annotate('Sill', xy=(650, 15))
+    # ax2.annotate('Sill', xy=(650, 15))
 
     return None
 
@@ -597,7 +641,7 @@ def plot_granite_solidus(**kwargs):
     return None
 
 
-def plot_goetze_line(**kwargs):
+def plot_goetze(**kwargs):
     """Plot the Goetze's criterion (Briegel & Goetze, 1978) in the differential
     stress vs deep space.
 
@@ -620,6 +664,8 @@ def plot_goetze_line(**kwargs):
     ro = ((z_moho / z_lithos) * ro_crust) + (((z_lithos - z_moho) / z_lithos) * ro_mantle)
     lithos_base_P = (ro * g * z_lithos) / 1e6
     lithos_P = [0, moho_P, lithos_base_P]
+
+    # ax1.fill_between()
 
     return ax1.plot(lithos_P, depths, 'k--', label="Goetze's criterion'", **kwargs)
 
@@ -680,13 +726,13 @@ def Anderson_strike(depth, mu, C0, lamb):
     return diff_stress / 10**6
 
 
-def power_law_creep(ss_rate, A, n, Q, R, T, P, V, d, m, f, r):
+def power_law_creep(ss, A, n, Q, R, T, P, V, d, m, f, r):
     """ Return the neccesary differential stress (Tresca criterion) in MPa
     for permanently deforming a polycrystalline material at a given strain rate.
 
     Parameters
     ----------
-    ss_rate: strain rate [s**-1]
+    ss: strain rate [s**-1]
     A: material constant [MPa**-n s**-1]
     n: stress exponent
     Q: activation energy [J mol**-1]
@@ -706,7 +752,7 @@ def power_law_creep(ss_rate, A, n, Q, R, T, P, V, d, m, f, r):
     - Effect of partial melt not considered
     """
 
-    return (ss_rate * (d**m) * (f**r) * np.exp((Q + P * V) / (R * T)) / A)**(1 / n)
+    return (ss * (d**m) * (f**r) * np.exp((Q + P * V) / (R * T)) / A)**(1 / n)
 
 
 def thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
@@ -716,8 +762,8 @@ def thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
     Parameters
     ----------
     z0: surface elevation [km]
-    z: depth at the base of the model [km]
-    T_surf: temperature on the Earth surface [K]
+    z: max. depth in the model [km]
+    T_surf: temperature at Earth surface [K]
     Jq: average heat flux [mW m**-2]
     A: average heat productivity [microW m**-3]
     K: coefficient of thermal conductivity [W m**-1 K**-1]
@@ -764,7 +810,7 @@ ol_disloc_creep       Plot dislocation creep flow laws for olivine
 Other functions
 ====================  ================================================================
 plot_triple_point     Plot the Al2SiO5 triple point (Holdoway or Pattison)
-plot_goetze_line      Plot the Goetze criterion
+plot_goetze           Plot the Goetze criterion
 plot_granite_solidus  Plot granite solidus lines (wet and dry)
 plot_borehole_data    Plot temperature gradients from superdeep boreholes
 ====================  ================================================================
@@ -787,10 +833,10 @@ temperatures and corresponding depths in a variable:
 >>> my_model = stable_geotherm()
 
 Plotting a dislocation creep flow law for quartz:
->>> qtz_disloc_creep(z0=10, geotherm=my_model, form='Hirth')
+>>> qtz_disloc_creep(z0=10, geotherm=my_model, law='HTD')
 
 Plotting a dislocation creep flow law for olivine:
->>> ol_disloc_creep(geotherm=my_model, form='Hirth')
+>>> ol_disloc_creep(geotherm=my_model, law='HK_dry')
 """
 
 print(' ')
