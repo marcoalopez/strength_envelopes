@@ -132,7 +132,7 @@ def init_plot(moho=moho, LAB=LAB, double_plot=True):
 # ==============================================================================#
 # FUNCTIONS TO GENERATE CURVES IN THE DIFFERENTIAL STRESS VS DEPTH PLOT
 
-def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **kwargs):
+def fric_strength(z, fault_type='strike', mu=0.73, lamb=0.36, C0=0.0, annot=None, **kwargs):
     """ Estimate and plot frictional slopes in the depth vs differential stress space.
 
     Parameters
@@ -140,11 +140,8 @@ def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **k
     z : scalar
         maximum depth [km].
 
-    fault : string
+    fault_type : string
         the type of fault, either 'thrust', 'normal' or 'strike'.
-
-    annot : None or string, optional
-        automatically annotates fault 'type' or 'mu' and 'lambda' values in a legend.
 
     mu : scalar between 0 an 1, optional
         Coefficient of friction. Default value 0.73; this is the Rutter and Glover
@@ -157,6 +154,9 @@ def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **k
     C0 : scalar, optional
         Internal cohesion of the rock. Mostly negligible in nature. Default = 0.0
         This parameter can be used as the frictional cohesive strenght too.
+
+    annot : None or string, optional
+        automatically annotates fault 'type' or 'mu' and 'lambda' values in a legend.
 
     kwargs : `~matplotlib.collections.Collection` properties
         Eg. alpha, edgecolor(ec), facecolor(fc), linewidth(lw), linestyle(ls),
@@ -189,15 +189,15 @@ def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **k
     """
 
     # Compute differential stress values depending on the type of fault
-    if fault == 'thrust':
+    if fault_type == 'thrust':
         x = [Anderson_thrust(0, mu, C0, lamb),
              Anderson_thrust(z, mu, C0, lamb)]
 
-    elif fault == 'normal':
+    elif fault_type == 'normal':
         x = [Anderson_extension(0, mu, C0, lamb),
              Anderson_extension(z, mu, C0, lamb)]
 
-    elif fault == 'strike':
+    elif fault_type == 'strike':
         x = [Anderson_strike(0, mu, C0, lamb),
              Anderson_strike(z, mu, C0, lamb)]
 
@@ -208,7 +208,7 @@ def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **k
     y = [0, z]
 
     print('')
-    print('fault type:' + fault)
+    print('fault type:' + fault_type)
     print('Coefficient of friction =', mu)
     print('Coefficient of fluid pressure =', lamb)
     print('Internal cohesion (or frictional cohesive strength) =', C0)
@@ -216,7 +216,7 @@ def fric_strength(z, fault='strike', annot=None, mu=0.73, lamb=0.36, C0=0.0, **k
 
     if annot is not None:
         if annot == 'type':
-            ax1.plot(x, y, label='{n}'.format(n=fault))
+            ax1.plot(x, y, label='{n}'.format(n=fault_type))
             ax1.legend(fontsize=9)
             return None
         elif annot == 'lambda':
@@ -818,7 +818,7 @@ def power_law_creep(ss, A, n, Q, R, T, P, V, d, m, f, r):
     T : absolute temperature [K]
     P : pressure [MPa]
     V : activation volume per mol [m**3 mol**-1]
-    d : mean grain size [microns]
+    d : average grain size [microns]
     m : grain size exponent
     f : fugacity of water [water molecules per 1e6 Si atoms]
     r : water fugacity exponent
