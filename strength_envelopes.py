@@ -44,7 +44,7 @@ import matplotlib as mpl
 g = 9.80665  # average gravitational acceleration [m/s**2]
 R = 8.3144598  # universal gas constant [J mol**-1 K**-1]
 
-# Mechanical constants (CAUTION! these are global variables and thus their values affects different functions)
+# Mechanical constants (CAUTION! these are global variables and thus changing their values will affect the results of different functions)
 ro_crust = 2750  # average rock density in the crust [kg/m**3]
 ro_mantle = 3330  # average rock density in the mantle [kg/m**3]
 ref_sr = 1.0e-14  # Reference average shear strain rate in the ductile lithosphere [s**-1]; see Twiss and Moores (2007, p.488)
@@ -52,88 +52,20 @@ moho = 34.4  # Average continental crust thickness [km] (Huang et al. 2013)
 LAB = 81  # Average lithosphere-asthenosphere boundary (LAB) [km] beneath tectonically altered regions (Rychert and Shearer, 2009)
 
 # set plot style
-style = 'ggplot'  # you can use other styles as well, see https://tonysyu.github.io/raw_content/matplotlib-style-gallery/gallery.html
-mpl.style.use(style)
-
+plot_style = 'ggplot'
+mpl.style.use(plot_style)
+# you can use other styles as well, see the following gallery:
+# https://tonysyu.github.io/raw_content/matplotlib-style-gallery/gallery.html
 # ==============================================================================#
 # DO NOT MODIFY THE CODE BELOW - UNLESS YOU KNOW WHAT YOU'RE DOING!
 
-
-def init_plot(moho=moho, LAB=LAB, double_plot=True):
-    """ Initialize the figure base.
-
-    Parameters
-    ----------
-    moho : positive scalar
-        the depth of the moho in km
-
-    LAB : positive scalar
-        the depth of the lithosphere-asthenosphere boundary (LAB)
-
-    double_plot : boolean
-        If True, two plots will appear: a diff. stress vs depth and a T vs depth.
-        If False only a differential stress vs depth plot will be plotted.
-
-    Examples
-    --------
-    >>> fig (ax1, ax2) = init_plot()
-    >>> fig, ax1 = set_plot(doble_plot=False)
-
-    Important note: for a correct use of the script you must use ax1 and ax2
-    as the name of the figure axes
-
-    Return
-    ------
-    the figure and axes matplotlib objects
-    """
-    if double_plot is True:
-        fig = plt.figure(tight_layout=True)
-
-        ax1 = fig.add_subplot(121)
-        plt.gca().invert_yaxis()
-        plt.gca().xaxis.tick_top()
-        plt.gca().xaxis.set_label_position('top')
-        ax1.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
-        ax1.plot([0, 600], [moho, moho], 'k-')
-        ax1.text(0, moho - moho / 90, 'Moho', fontsize=10)
-        ax1.plot([0, 600], [LAB, LAB], 'k-')
-        ax1.text(0, LAB - LAB / 90, 'lithosphere base', fontsize=10)
-        ax1.plot(0, 0)
-
-        ax2 = fig.add_subplot(122)
-        plt.gca().invert_yaxis()
-        plt.gca().xaxis.tick_top()
-        plt.gca().xaxis.set_label_position('top')
-        ax2.set(xlabel='Temperature ($\degree C$)')
-        ax2.plot([0, 1300], [moho, moho], 'k-')
-        ax2.text(0, moho - moho / 90, 'Moho', fontsize=10)
-        ax2.plot([0, 1300], [LAB, LAB], 'k-')
-        ax2.text(0, LAB - LAB / 90, 'lithosphere base', fontsize=10)
-        ax2.plot(0, 0, 'k+')
-
-        return fig, (ax1, ax2)
-
-    else:
-        fig, ax = plt.subplots()
-
-        plt.gca().invert_yaxis()
-        plt.gca().xaxis.tick_top()
-        plt.gca().xaxis.set_label_position('top')
-        ax.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
-        ax.plot([0, 600], [moho, moho], 'k-')
-        ax.text(0, moho - moho / 90, 'Moho', fontsize=10)
-        ax.plot(0, 0)
-
-        fig.tight_layout()
-
-        return fig, ax
+ax1 = None
+ax2 = None
+ax = None
 
 
-# ==============================================================================#
-# FUNCTIONS TO GENERATE CURVES IN THE DIFFERENTIAL STRESS VS DEPTH PLOT
-
-def fric_strength(z, fault_type='strike', mu=0.73, lamb=0.36, C0=0.0, annot=None, **kwargs):
-    """ Estimate and plot frictional slopes in the depth vs differential stress space.
+def fric_strength(z, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot=None, **kwargs):
+    """ Estimate and plot frictional strength slopes in the depth vs differential stress space.
 
     Parameters
     ----------
@@ -141,7 +73,7 @@ def fric_strength(z, fault_type='strike', mu=0.73, lamb=0.36, C0=0.0, annot=None
         maximum depth [km].
 
     fault_type : string
-        the type of fault, either 'thrust', 'normal' or 'strike'.
+        the type of fault, either 'inverse', 'normal' or 'strike-slip'.
 
     mu : scalar between 0 an 1, optional
         Coefficient of friction. Default value 0.73; this is the Rutter and Glover
@@ -180,7 +112,7 @@ def fric_strength(z, fault_type='strike', mu=0.73, lamb=0.36, C0=0.0, annot=None
     Examples
     --------
     fric_strength(z=15, fault='normal')
-    fric_strength(z=20, fault='normal', annot='lamb', lamb=0.5)
+    fric_strength(z=20, fault='inverse', annot='lamb', lamb=0.5)
     fric_strength(z=15, color='red', linewidth=3)
 
     Calls functions
@@ -189,26 +121,25 @@ def fric_strength(z, fault_type='strike', mu=0.73, lamb=0.36, C0=0.0, annot=None
     """
 
     # Compute differential stress values depending on the type of fault
-    if fault_type == 'thrust':
+    if fault_type == 'strike-slip':
+        x = [Anderson_strike(0, mu, C0, lamb),
+             Anderson_strike(z, mu, C0, lamb)]
+
+    elif fault_type == 'inverse':
         x = [Anderson_thrust(0, mu, C0, lamb),
              Anderson_thrust(z, mu, C0, lamb)]
 
     elif fault_type == 'normal':
         x = [Anderson_extension(0, mu, C0, lamb),
              Anderson_extension(z, mu, C0, lamb)]
-
-    elif fault_type == 'strike':
-        x = [Anderson_strike(0, mu, C0, lamb),
-             Anderson_strike(z, mu, C0, lamb)]
-
+   
     else:
-        print("Wrong form. Please try again using 'thrust', 'normal' or 'strike'.")
-        return None
+        raise ValueError("Faul type misspelled. Please use 'inverse', 'normal' or 'strike-slip'.")
 
     y = [0, z]
 
     print('')
-    print('fault type:' + fault_type)
+    print('fault type:', fault_type)
     print('Coefficient of friction =', mu)
     print('Coefficient of fluid pressure =', lamb)
     print('Internal cohesion (or frictional cohesive strength) =', C0)
@@ -231,7 +162,8 @@ def fric_strength(z, fault_type='strike', mu=0.73, lamb=0.36, C0=0.0, annot=None
     return ax1.plot(x, y, **kwargs)
 
 
-def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=(34, 0.01, 3.35), **kwargs):
+def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51),
+                    mantle_params=(34, 0.01, 3.35), **kwargs):
     """ Estimate and plot a steady-state thermal gradient for the continental
     lithosphere considering a two-layer model (crust vs lithospheric mantle).
     It uses the Turcotte and Schubert (1982) model (see thermal_gradient_eq
@@ -267,19 +199,19 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=
 
     Assumptions
     -----------
-    - The same average thermal values (Jq, A, K) apply for whole crust. The
-    same applies for the lithospheric mantle.
+    - The same average thermal values (Jq, A, K) apply for whole crust and
+    the lithospheric mantle.
     - The model requires providing the depth of the lithosphere base (LAB).
     - The surface elevation is always set to zero and hence the LAB depth
     is measured relative to the surface elevation not the mean sea level
     (Lagrangian reference frame).
-    - The thermal properities of the rocks are isotropic.
+    - The thermal properities of the rocks are considered +-isotropic.
     - The temperature dependence of thermal conductivity is neglected.
 
     Examples
     --------
     my_model = stable_geotherm()
-    other_model = stable_geotherm(crust_params=(75, 0.97, 2.51), color='orange')
+    another_model = stable_geotherm(crust_params=(75, 0.97, 2.51), color='orange')
 
     Call function
     -------------
@@ -309,13 +241,14 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=
     T_values = np.hstack((T_crust, T_mantle))
 
     T_at_moho_index = int(np.argwhere(depth_values <= moho)[-1])
+    T_at_moho = T_values[T_at_moho_index] - 273.15
 
     print(' ')
     print('ACCORDING TO THE MODEL:')
-    print('The T at the base of the moho is', round(T_values[T_at_moho_index] - 273.15, 1), '[deg C]')
-    print('The T at the lithosphere-asthenosphere boundary is', round(T_values[-1] - 273.15, 1), '[deg C]')
-    print('The average temperature gradient in the crust is', round(Tg_crust, 2), '[K km-1]')
-    print('The average temperature gradient in the lithospheric mantle is', round(Tg_mantle, 2), '[K km-1]')
+    print('The T at the base of the moho is {val} [deg C]' .format(val=round(T_at_moho, 1)))
+    print('The T at the lithosphere-asthenosphere boundary is {val} [deg C]' .format(val=round(T_values[-1] - 273.15, 1)))
+    print('The average temperature gradient in the crust is {val} [K km-1]' .format(val=round(Tg_crust, 2)))
+    print('The average temperature gradient in the lithospheric mantle is {val} [K km-1]' .format(val=round(Tg_mantle, 2)))
 
     # plot data in the temperature vs depth space (ax2) [C deg vs km]
     ax2.plot(T_values - 273.15, depth_values, '-', label='Geothermal gradient', **kwargs)
@@ -323,7 +256,7 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51), mantle_params=
     return T_values, depth_values
 
 
-def qtz_disloc_creep(z0, geotherm, law='HTD', strain_rate=ref_sr, d=35, m=0.0, fug=0.0, r=0.0, **kwargs):
+def qtz_disloc_creep(z0, geotherm, flow_law='HTD', strain_rate=ref_sr, d=35, m=0.0, fug=0.0, r=0.0, **kwargs):
     """ Plot flow law curves for dislocation creep in quartz in the differential stress
     vs depth space. Only post-1992 dislocation creep flow laws are considered.
 
@@ -335,7 +268,7 @@ def qtz_disloc_creep(z0, geotherm, law='HTD', strain_rate=ref_sr, d=35, m=0.0, f
     geotherm : array_like (2-dimensional)
         temperature variation with depth [K] and corresponding depths [km]
 
-    law : string, optional, default: 'HTD'
+    flow_law : string, optional, default: 'HTD'
         the flow law used, either 'HTD', 'LP_wet', 'GT_wet',
         'HK_wet', or 'RB_wet'.
 
@@ -381,7 +314,7 @@ def qtz_disloc_creep(z0, geotherm, law='HTD', strain_rate=ref_sr, d=35, m=0.0, f
     T_gradient, depths = geotherm
 
     # extract experimentally derived values for dislocation creep quartz flow law
-    n, Q, A = get_quartz_values(law)
+    n, Q, A = get_quartz_values(flow_law)
 
     # fix some values for dislocation creep quartz flow laws
     V = 0  # Activation volume per mol. Negligible at crustal depths.
@@ -397,7 +330,7 @@ def qtz_disloc_creep(z0, geotherm, law='HTD', strain_rate=ref_sr, d=35, m=0.0, f
     return ax1.plot(diff_stress, depths[mask], **kwargs)
 
 
-def ol_disloc_creep(geotherm, law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, fug=0.0, r=0.0, **kwargs):
+def ol_disloc_creep(geotherm, flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, fug=0.0, r=0.0, **kwargs):
     """ Plot flow law curves for dislocation creep in olivine or peridotite in
     the differential stress vs depth space.
 
@@ -406,7 +339,7 @@ def ol_disloc_creep(geotherm, law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, f
     geotherm : array_like (2-dimensional)
         temperature variation wth depth [K] and corresponding depths [km]
 
-    law : string, optional
+    flow_law : string, optional
         the flow law default parameters, either 'HK_wet', 'HK_dry', 'KJ_wet',
         'KJ_dry', 'ZK_dry', 'Faul_dry'. Default='HK_dry'
 
@@ -451,7 +384,7 @@ def ol_disloc_creep(geotherm, law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, f
     T_gradient, depths = geotherm
 
     # extract experimentally derived values for dislcation creep olivine flow law
-    n, Q, A, V = get_olivine_values(law)
+    n, Q, A, V = get_olivine_values(flow_law)
 
     # Select a specific range of temperature gradient according to moho and
     # LAB depths
@@ -475,11 +408,10 @@ def ol_disloc_creep(geotherm, law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, f
 # FUNCTIONS WITH EXPERIMENTALLY DERIVED PARAMETERS
 
 
-def get_quartz_values(law):
-    """Contain the experimentally derived values of different quartz flow laws
-    and return the required.
+def get_quartz_values(flow_law):
+    """Curated list of experimentally derived values defining quartz flow laws.
 
-    law : string
+    flow_law : string
         the flow law parameters to use, either...
 
     Returns
@@ -488,43 +420,41 @@ def get_quartz_values(law):
     constant (A) [MPa**-n s**-1]
     """
 
-    if law == 'HTD':  # from Hirth et al. (2001)
+    if flow_law == 'HTD':  # from Hirth et al. (2001)
         n = 4.0  # stress exponent
         Q = 135000  # activation energy [J mol**-1]
         A = 10**(-11.2)  # material parameter [MPa**-n s**-1]
 
-    elif law == 'LP_wet':  # from Luan and Paterson (1992)
+    elif flow_law == 'LP_wet':  # from Luan and Paterson (1992)
         n = 4.0
         Q = 152000
         A = 10**(-7.2)
 
-    elif law == 'GT_wet':  # from Gleason and Tullis (1995). Wet quartzite.
+    elif flow_law == 'GT_wet':  # from Gleason and Tullis (1995). Wet quartzite.
         n = 4.0
         Q = 223000
         A = 1.1e-4
 
-    elif law == 'HK_wet':  # Holyoke and Kronenberg (2010), based on Gleason and Tullis (1995) data
+    elif flow_law == 'HK_wet':  # Holyoke and Kronenberg (2010), based on Gleason and Tullis (1995) data
         n = 4.0
         Q = 223000
         A = 5.1e-4
 
-    elif law == 'RB_wet':  # from Rutter and Brodie (2004). Wet quartzite, minor grain boundary sliding inferred.
+    elif flow_law == 'RB_wet':  # from Rutter and Brodie (2004). Wet quartzite, minor grain boundary sliding inferred.
         n = 2.97
         Q = 242000
         A = 10**(-4.93)
 
     else:
-        print("Wrong law name. Please try again using 'Gleason', 'Luan', 'Hirth', 'Holyoke' or 'Rutter'")
-        return None
+        raise ValueError("Quartz flow law name misspelled. Use 'HTD', 'LP_wet', 'GT_wet', 'HK_wet' or 'RB_wet'")
 
     return n, Q, A
 
 
-def get_olivine_values(law):
-    """Contain the experimentally derived values of different olivine flow laws
-    and return the required.
+def get_olivine_values(flow_law):
+    """Curated list of experimentally derived values defining olivine flow laws.
 
-    law : string
+    flow_law : string
         the flow law default parameters
 
     Returns
@@ -533,45 +463,51 @@ def get_olivine_values(law):
     constant (A) [MPa**-n s**-1], and the activation volume per mol (V) [m**3 mol**-1]
     """
 
-    if law == 'HK_wet':  # from Hirth and Kohlstedt (2003). Wet Olivine
+    if flow_law == 'HK_wet':  # from Hirth and Kohlstedt (2003). Wet Olivine
         n = 3.5  # stress exponent
         Q = 520000  # activation energy [J mol**-1]
         A = 10**(3.2)  # material parameter [MPa**-n s**-1]
         V = 2.2e-05  # activation volume per mol [m**3 mol**-1]
 
-    elif law == 'HK_dry':  # from Hirth and Kohlstedt (2003). Dry Olivine
+    elif flow_law == 'HK_dry':  # from Hirth and Kohlstedt (2003). Dry Olivine
         n = 3.5
         Q = 530000
         A = 10**(5.0)
         V = 1.8e-05
 
-    elif law == 'KJ_wet':  # from Karato and Jung (2003). Wet olivine
+    elif flow_law == 'KJ_wet':  # from Karato and Jung (2003). Wet olivine
         n = 3.0
         Q = 470000
         A = 10**(2.9)
         V = 2.4e-05
 
-    elif law == 'KJ_dry':  # from Karato and Jung (2003). Dry olivine
+    elif flow_law == 'KJ_dry':  # from Karato and Jung (2003). Dry olivine
         n = 3.0
         Q = 510000
         A = 10**(6.1)
         V = 1.4e-05
 
-    elif law == 'ZK_dry':  # from Zimmerman and Kohlstedt (2004). Dry peridotite
+    elif flow_law == 'ZK_dry':  # from Zimmerman and Kohlstedt (2004). Dry peridotite
         n = 4.3
         Q = 550000
         A = 10**(4.8)
         V = 0.0  # activation volume per mol not provided!
 
-    elif law == 'Faul_dry':  # from Faul et al. (2011). Dry olivine
+    elif flow_law == 'Faul_dry':  # from Faul et al. (2011). Dry olivine
         n = 8.2
         Q = 682000
         A = 0.3
         V = 0.0  # activation volume per mol not provided!
 
+    elif flow_law == 'Ohuchi':  # from Ohuchi et al. (2015)
+        n = 3.0
+        Q = 423000
+        A = 10**(-4.89)
+        V = 17.6e-06
+        r = 1.25  # water fugacity exponent
+
     else:
-        print("Wrong law name. Please try again using 'HK_wet', 'HK_dry', 'KJ_wet', 'KJ_dry', 'ZK_dry', or 'Faul_dry'")
-        return None
+        raise ValueError("Olivine flow law name misspelled. Use 'HK_wet', 'HK_dry', 'KJ_wet', 'KJ_dry', 'ZK_dry', 'Faul_dry', or 'Ohuchi'")
 
     return n, Q, A, V
 
@@ -594,7 +530,7 @@ def triple_point(t_point='Holdoway'):
         T_And_Sill = 800  # check this!
 
     else:
-        print("Wrong triple point. Use 'Holdoway' or 'Pattison'")
+        raise ValueError("Triple point misspelled. Use 'Holdoway' or 'Pattison'")
 
     ax2.plot([154.85, T], [0, depth], 'k-')  # Ky-And line
     ax2.plot([T, T_And_Sill], [depth, 0], 'k-')  # And-Sill line
@@ -612,10 +548,10 @@ def borehole_data(borehole='KTB', T_surf=280.65):
     Parameters
     ----------
     borehole : string, optional
-        Name of the borehole data, either 'KTB', 'Kola', or 'Gravberg'
+        Name of the borehole data, either 'KTB' (default), 'Kola', or 'Gravberg'
 
     T_surf : positive scalar, optional
-        Temperature at surface [K]; this is 7.5 [deg C] or 45.5 [fahrenheit]
+        Temperature at surface [K]. Default: 7.5 [deg C] or 45.5 [fahrenheit]
         as measured in the KTB borehole.
     """
 
@@ -650,14 +586,14 @@ def borehole_data(borehole='KTB', T_surf=280.65):
 
     else:
         print(' ')
-        print("Wrong borehole name. Please use 'KTB', 'Kola' or 'Gravberg'")
+        raise ValueError("Borehole name misspelled. Use 'KTB', 'Kola' or 'Gravberg'")
 
     return None
 
 
 def granite_solidus(**kwargs):
     """ Plot the granite solidus line in the temperature vs depth space.
-    P(depth)-T values from Johannes and Holtz (1996).
+    P-T values from Johannes and Holtz (1996).
 
     Parameters
     ----------
@@ -685,8 +621,8 @@ def granite_solidus(**kwargs):
 
 
 def peridotite_solidus(**kwargs):
-    """ Plot the granite solidus line in the temperature vs depth space.
-    P(depth)-T values from Johannes and Holtz (1996).
+    """ Plot the peridotite solidus line in the temperature vs depth space.
+    P-T values from TODO (xxxx).
 
     Parameters
     ----------
@@ -716,6 +652,10 @@ def goetze_line(**kwargs):
     - Average density for the entire crust is 2750 kg/m**3
     - Average density for the lithospheric mantle is 3330 kg/m**3
     - Surface elevation set to 0 km
+
+    Future implementations
+    ----------------------
+    Use the PREM model - TODO
     """
     # convert km to meters
     z_moho = moho * 1000
@@ -805,7 +745,7 @@ def Anderson_strike(depth, mu, C0, lamb):
 
 def power_law_creep(ss, A, n, Q, R, T, P, V, d, m, f, r):
     """ Return the neccesary differential stress (Tresca criterion) in MPa
-    for deforming permanently a polycrystalline material at a given evironmental
+    for permanently deforming a polycrystalline material at a given environmental
     conditions.
 
     Parameters (all positive scalars)
@@ -861,6 +801,80 @@ def thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
 # ==============================================================================#
 
 
+def init_plot(double_plot=True):
+    """ Initialize the figure base.
+
+    Parameters
+    ----------
+    moho : positive scalar
+        the depth of the moho in km
+
+    LAB : positive scalar
+        the depth of the lithosphere-asthenosphere boundary (LAB)
+
+    double_plot : boolean
+        If True, two plots will appear: a diff. stress vs depth and a T vs depth.
+        If False only a differential stress vs depth plot will be plotted.
+
+    Examples
+    --------
+    >>> fig (ax1, ax2) = init_plot()
+    >>> fig, ax1 = set_plot(doble_plot=False)
+
+    Important note: for a correct use of the script you must use ax1 and ax2
+    as the name of the figure axes
+
+    Return
+    ------
+    the figure and axes matplotlib objects
+    """
+    if double_plot is True:
+        fig = plt.figure()
+
+        ax1 = fig.add_subplot(121)
+        plt.gca().invert_yaxis()
+        plt.gca().xaxis.tick_top()
+        plt.gca().xaxis.set_label_position('top')
+        ax1.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
+        ax1.plot([0, 600], [moho, moho], 'k-')
+        ax1.text(0, moho - moho / 90, 'Moho', fontsize=10)
+        ax1.plot([0, 600], [LAB, LAB], 'k-')
+        ax1.text(0, LAB - LAB / 90, 'lithosphere base', fontsize=10)
+        ax1.plot(0, 0)
+
+        ax2 = fig.add_subplot(122)
+        plt.gca().invert_yaxis()
+        plt.gca().xaxis.tick_top()
+        plt.gca().xaxis.set_label_position('top')
+        ax2.set(xlabel='Temperature ($\degree C$)')
+        ax2.plot([0, 1300], [moho, moho], 'k-')
+        ax2.text(0, moho - moho / 90, 'Moho', fontsize=10)
+        ax2.plot([0, 1300], [LAB, LAB], 'k-')
+        ax2.text(0, LAB - LAB / 90, 'lithosphere base', fontsize=10)
+        ax2.plot(0, 0, 'k+')
+
+        fig.tight_layout()
+
+        return fig, (ax1, ax2)
+
+    else:
+        fig, ax = plt.subplots()
+
+        plt.gca().invert_yaxis()
+        plt.gca().xaxis.tick_top()
+        plt.gca().xaxis.set_label_position('top')
+        ax.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
+        ax.plot([0, 600], [moho, moho], 'k-')
+        ax.text(0, moho - moho / 90, 'Moho', fontsize=10)
+        ax.plot([0, 600], [LAB, LAB], 'k-')
+        ax.text(0, LAB - LAB / 90, 'lithosphere base', fontsize=10)
+        ax.plot(0, 0)
+
+        fig.tight_layout()
+
+        return fig, ax
+
+
 T_list_wetGr = np.array([632.203, 635.593, 640.254, 644.915, 647.034, 649.186, 652.128, 655.561, 660.220, 665.860, 671.010, 676.895,
                          684.251, 692.589, 700.190, 709.999, 719.072, 730.106, 744.329, 757.815, 778.413, 797.295, 815.686, 856.391, 906.415, 961.86])
 P_list_wetGr = np.array([1297.289, 1040.060, 787.048, 546.687, 468.675, 417.936, 371.570, 332.525, 294.700, 260.535, 234.912,
@@ -869,7 +883,7 @@ P_list_wetGr = np.array([1297.289, 1040.060, 787.048, 546.687, 468.675, 417.936,
 
 texto = """
 ======================================================================================
-Welcome to Strength envelopes script beta version
+Welcome to Strength envelopes script v1.0
 ======================================================================================
 
 Strength envelopes is a free open-source cross-platform script to generate strength
@@ -895,31 +909,19 @@ borehole_data         Plot temperature gradients from superdeep boreholes
 ====================  ================================================================
 
 You can get information on the different methods by:
-    (1) Typing help(name of the function in the console. e.g. >>> help(stable_geotherm)
+    (1) Typing the command help in the console as follows: help(name of the function)
+        e.g. >>> help(stable_geotherm)
     (2) In the Spyder IDE by writing the name of the function and clicking Ctrl+I
     (3) Visit script documentation at https://github.com/marcoalopez/Strength_envelopes
 
 
 EXAMPLES
 --------
-Plot a frictional slope for a strike-slip fault down to 15 km depth
-using default coefficients of friction and fluid pressure:
->>> fric_strength(z=15, fault='strike')
+Initialize a figure
+fig, (ax1, ax2) = init_plot()
 
-Estimating a stable geotherm using default parameters and storing
-temperatures and corresponding depths in a variable:
->>> my_model = stable_geotherm()
-
-Plotting a dislocation creep flow law for quartz:
->>> qtz_disloc_creep(z0=10, geotherm=my_model, law='HTD')
-
-Plotting a dislocation creep flow law for olivine:
->>> ol_disloc_creep(geotherm=my_model, law='HK_dry')
-
-For more examples see documentation of write help(function_name)
+For more examples see documentation or use help(function_name)
 """
 
 print(' ')
 print(texto)
-
-fig, (ax1, ax2) = init_plot()
