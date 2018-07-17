@@ -85,7 +85,7 @@ def fric_strength(z, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot
 
     C0 : scalar, optional
         Internal cohesion of the rock. Mostly negligible in nature. Default = 0.0
-        This parameter can be used as the frictional cohesive strenght too.
+        This parameter can be used as the frictional cohesive strenght as well.
 
     annot : None or string, optional
         automatically annotates fault 'type' or 'mu' and 'lambda' values in a legend.
@@ -132,7 +132,7 @@ def fric_strength(z, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot
     elif fault_type == 'normal':
         x = [Anderson_extension(0, mu, C0, lamb),
              Anderson_extension(z, mu, C0, lamb)]
-   
+
     else:
         raise ValueError("Faul type misspelled. Please use 'inverse', 'normal' or 'strike-slip'.")
 
@@ -392,7 +392,7 @@ def ol_disloc_creep(geotherm, flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0
     T_masked = T_gradient[mask]
 
     # create a list with the corresponding pressures
-    P_list = []  # preallocate this list if length is usually larger than 1e6
+    P_list = []  # preallocate this list if length is usually larger than 1e6! TODO
     for z in depths[mask]:
         ro = ((moho / z) * ro_crust) + (((z - moho) / z) * ro_mantle)
         P = ro * g * z
