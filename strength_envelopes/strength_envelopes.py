@@ -36,13 +36,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from scipy.constants import g, R
+from flow_laws import olivine, quartz
+import thermal_functions as tf
+import mechanical_functions as mf
 
 # ==============================================================================#
 # DEFAULT INPUT PARAMETERS
-
-# Miscellanea
-g = 9.80665  # average gravitational acceleration [m/s**2]
-R = 8.3144598  # universal gas constant [J mol**-1 K**-1]
 
 # Mechanical constants (CAUTION! these are global variables and thus changing their values will affect the results of different functions)
 ro_crust = 2750  # average rock density in the crust [kg/m**3]
@@ -122,16 +122,16 @@ def fric_strength(z, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot
 
     # Compute differential stress values depending on the type of fault
     if fault_type == 'strike-slip':
-        x = [Anderson_strike(0, mu, C0, lamb),
-             Anderson_strike(z, mu, C0, lamb)]
+        x = [mf.Anderson_fault('strike', 0, mu, C0, lamb, ro_crust),
+             mf.Anderson_fault('strike', z, mu, C0, lamb, ro_crust)]
 
     elif fault_type == 'inverse':
-        x = [Anderson_thrust(0, mu, C0, lamb),
-             Anderson_thrust(z, mu, C0, lamb)]
+        x = [mf.Anderson_fault('thrust', 0, mu, C0, lamb, ro_crust),
+             mf.Anderson_fault('thrust', z, mu, C0, lamb, ro_crust)]
 
     elif fault_type == 'normal':
-        x = [Anderson_extension(0, mu, C0, lamb),
-             Anderson_extension(z, mu, C0, lamb)]
+        x = [mf.Anderson_fault('extension', 0, mu, C0, lamb, ro_crust),
+             mf.Anderson_fault('extension', z, mu, C0, lamb, ro_crust)]
 
     else:
         raise ValueError("Faul type misspelled. Please use 'inverse', 'normal' or 'strike-slip'.")
@@ -235,9 +235,9 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51),
     depth_values = np.linspace(0, LAB, 2**12)  # mesh density = 2^12
 
     # Estimate stable geotherm
-    T_crust = thermal_gradient_eq(0, depth_values[depth_values <= moho], T_surf, Jq_crust, A_crust, K_crust)
+    T_crust = tf.turcotte_schubert_eq(0, depth_values[depth_values <= moho], T_surf, Jq_crust, A_crust, K_crust)
     new_ref_frame = depth_values[depth_values <= moho][-1]
-    T_mantle = thermal_gradient_eq(new_ref_frame, depth_values[depth_values > moho], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
+    T_mantle = tf.turcotte_schubert_eq(new_ref_frame, depth_values[depth_values > moho], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
     T_values = np.hstack((T_crust, T_mantle))
 
     T_at_moho_index = int(np.argwhere(depth_values <= moho)[-1])
@@ -303,7 +303,7 @@ def qtz_disloc_creep(z0, geotherm, flow_law='HTD', strain_rate=ref_sr, d=35, m=0
     Examples
     --------
     qtz_disloc_creep(z0=9, geotherm=my_model, color='red', linewidth=3)
-    qtz_disloc_creep(z0=10, geotherm=my_model, law='GT_wet', strain_rate=5.0e-14)
+    qtz_disloc_creep(z0=10, geotherm=my_model, flow_law='GT_wet', strain_rate=5.0e-14)
 
     Calls function(s)
     -----------------
@@ -314,7 +314,7 @@ def qtz_disloc_creep(z0, geotherm, flow_law='HTD', strain_rate=ref_sr, d=35, m=0
     T_gradient, depths = geotherm
 
     # extract experimentally derived values for dislocation creep quartz flow law
-    n, Q, A = get_quartz_values(flow_law)
+    n, Q, A = quartz(flow_law)
 
     # fix some values for dislocation creep quartz flow laws
     V = 0  # Activation volume per mol. Negligible at crustal depths.
@@ -325,7 +325,7 @@ def qtz_disloc_creep(z0, geotherm, flow_law='HTD', strain_rate=ref_sr, d=35, m=0
     T_masked = T_gradient[mask]
 
     # estimate differential stress values
-    diff_stress = power_law_creep(strain_rate, A, n, Q, R, T_masked, P, V, d, m, fug, r)
+    diff_stress = mf.power_law_creep(strain_rate, A, n, Q, R, T_masked, P, V, d, m, fug, r)
 
     return ax1.plot(diff_stress, depths[mask], **kwargs)
 
@@ -371,7 +371,7 @@ def ol_disloc_creep(geotherm, flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0
 
     Examples
     --------
-    ol_disloc_creep(geotherm=my_model, law='Faul_dry')
+    ol_disloc_creep(geotherm=my_model, flow_law='Faul_dry')
     ol_disloc_creep(geotherm=my_model, fug=..., r=...)
 
     Calls function(s)
@@ -384,7 +384,7 @@ def ol_disloc_creep(geotherm, flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0
     T_gradient, depths = geotherm
 
     # extract experimentally derived values for dislcation creep olivine flow law
-    n, Q, A, V = get_olivine_values(flow_law)
+    n, Q, A, V, r = olivine(flow_law)
 
     # Select a specific range of temperature gradient according to moho and
     # LAB depths
@@ -400,116 +400,9 @@ def ol_disloc_creep(geotherm, flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0
     P_array = np.array(P_list)
 
     # estimate differential stress values
-    diff_stress = power_law_creep(strain_rate, A, n, Q, R, T_masked, P_array, V, d, m, fug, r)
+    diff_stress = mf.power_law_creep(strain_rate, A, n, Q, R, T_masked, P_array, V, d, m, fug, r)
 
     return ax1.plot(diff_stress, depths[mask], **kwargs)
-
-# ==============================================================================#
-# FUNCTIONS WITH EXPERIMENTALLY DERIVED PARAMETERS
-
-
-def get_quartz_values(flow_law):
-    """Curated list of experimentally derived values defining quartz flow laws.
-
-    flow_law : string
-        the flow law parameters to use, either...
-
-    Returns
-    -------
-    The stress exponent (n), the activation energy (Q) [J mol**-1], the material
-    constant (A) [MPa**-n s**-1]
-    """
-
-    if flow_law == 'HTD':  # from Hirth et al. (2001)
-        n = 4.0  # stress exponent
-        Q = 135000  # activation energy [J mol**-1]
-        A = 10**(-11.2)  # material parameter [MPa**-n s**-1]
-
-    elif flow_law == 'LP_wet':  # from Luan and Paterson (1992)
-        n = 4.0
-        Q = 152000
-        A = 10**(-7.2)
-
-    elif flow_law == 'GT_wet':  # from Gleason and Tullis (1995). Wet quartzite.
-        n = 4.0
-        Q = 223000
-        A = 1.1e-4
-
-    elif flow_law == 'HK_wet':  # Holyoke and Kronenberg (2010), based on Gleason and Tullis (1995) data
-        n = 4.0
-        Q = 223000
-        A = 5.1e-4
-
-    elif flow_law == 'RB_wet':  # from Rutter and Brodie (2004). Wet quartzite, minor grain boundary sliding inferred.
-        n = 2.97
-        Q = 242000
-        A = 10**(-4.93)
-
-    else:
-        raise ValueError("Quartz flow law name misspelled. Use 'HTD', 'LP_wet', 'GT_wet', 'HK_wet' or 'RB_wet'")
-
-    return n, Q, A
-
-
-def get_olivine_values(flow_law):
-    """Curated list of experimentally derived values defining olivine flow laws.
-
-    flow_law : string
-        the flow law default parameters
-
-    Returns
-    -------
-    The stress exponent (n), the activation energy (Q) [J mol**-1], the material
-    constant (A) [MPa**-n s**-1], and the activation volume per mol (V) [m**3 mol**-1]
-    """
-
-    if flow_law == 'HK_wet':  # from Hirth and Kohlstedt (2003). Wet Olivine
-        n = 3.5  # stress exponent
-        Q = 520000  # activation energy [J mol**-1]
-        A = 10**(3.2)  # material parameter [MPa**-n s**-1]
-        V = 2.2e-05  # activation volume per mol [m**3 mol**-1]
-
-    elif flow_law == 'HK_dry':  # from Hirth and Kohlstedt (2003). Dry Olivine
-        n = 3.5
-        Q = 530000
-        A = 10**(5.0)
-        V = 1.8e-05
-
-    elif flow_law == 'KJ_wet':  # from Karato and Jung (2003). Wet olivine
-        n = 3.0
-        Q = 470000
-        A = 10**(2.9)
-        V = 2.4e-05
-
-    elif flow_law == 'KJ_dry':  # from Karato and Jung (2003). Dry olivine
-        n = 3.0
-        Q = 510000
-        A = 10**(6.1)
-        V = 1.4e-05
-
-    elif flow_law == 'ZK_dry':  # from Zimmerman and Kohlstedt (2004). Dry peridotite
-        n = 4.3
-        Q = 550000
-        A = 10**(4.8)
-        V = 0.0  # activation volume per mol not provided!
-
-    elif flow_law == 'Faul_dry':  # from Faul et al. (2011). Dry olivine
-        n = 8.2
-        Q = 682000
-        A = 0.3
-        V = 0.0  # activation volume per mol not provided!
-
-    elif flow_law == 'Ohuchi':  # from Ohuchi et al. (2015)
-        n = 3.0
-        Q = 423000
-        A = 10**(-4.89)
-        V = 17.6e-06
-        r = 1.25  # water fugacity exponent
-
-    else:
-        raise ValueError("Olivine flow law name misspelled. Use 'HK_wet', 'HK_dry', 'KJ_wet', 'KJ_dry', 'ZK_dry', 'Faul_dry', or 'Ohuchi'")
-
-    return n, Q, A, V
 
 
 # ==============================================================================#
@@ -676,129 +569,6 @@ def goetze_line(**kwargs):
 
 
 # ==============================================================================#
-# AUXILIARY FUNCTIONS (i.e. functions performing single tasks using by other
-# functions.
-
-
-def Anderson_thrust(depth, mu, C0, lamb):
-    """ Returns the corresponding differential stress in MPa for a specific depth
-    in thrust faults using the Anderson theory of faulting (Anderson, 1905).
-
-    Parameters
-    ----------
-    depth : positive scalar
-        the depth [km]
-    mu : positive scalar
-        coefficient of friction
-    C0 : positive scalar
-        internal cohesion of the rock [MPa]
-    lamb : positive scalar
-        coefficient of fluid pressure
-    """
-    depth = 1000 * depth  # convert km to m
-    diff_stress = (2 * (C0 + mu * ro_crust * g * depth * (1 - lamb))) / (np.sqrt(mu**2 + 1) - mu)
-
-    return diff_stress / 10**6
-
-
-def Anderson_extension(depth, mu, C0, lamb):
-    """ Returns the corresponding differential stress in MPa for a specific depth
-    in normal faults using the Anderson theory of faulting (Anderson, 1905).
-
-    Parameters
-    ----------
-    depth : positive scalar
-        the depth [km]
-    mu : positive scalar
-        coefficient of friction
-    C0 : positive scalar
-        internal cohesion of the rock [MPa]
-    lamb : positive scalar
-        coefficient of fluid pressure
-    """
-    depth = 1000 * depth  # convert km to m
-    diff_stress = (- 2 * (C0 - mu * ro_crust * g * depth * (1 - lamb))) / (np.sqrt(mu**2 + 1) + mu)
-
-    return diff_stress / 10**6
-
-
-def Anderson_strike(depth, mu, C0, lamb):
-    """ Returns the corresponding differential stress in MPa for a specific depth
-    in strike-slip faults using the Anderson theory of faulting (Anderson, 1905).
-
-    Parameters
-    ----------
-    depth : positive scalar
-        the depth [km]
-    mu : positive scalar
-        coefficient of friction
-    C0 : positive scalar
-        internal cohesion of the rock [MPa]
-    lamb : positive scalar
-        coefficient of fluid pressure
-    """
-    depth = 1000 * depth  # convert km to m
-    diff_stress = (2 * (C0 + mu * ro_crust * g * depth * (1 - lamb))) / (np.sqrt(mu**2 + 1))
-
-    return diff_stress / 10**6
-
-
-def power_law_creep(ss, A, n, Q, R, T, P, V, d, m, f, r):
-    """ Return the neccesary differential stress (Tresca criterion) in MPa
-    for permanently deforming a polycrystalline material at a given environmental
-    conditions.
-
-    Parameters (all positive scalars)
-    ----------
-    ss : strain rate [s**-1]
-    A : material constant [MPa**-n s**-1]
-    n : stress exponent
-    Q : activation energy [J mol**-1]
-    R : universal gas constant [J mol**-1 K**-1]
-    T : absolute temperature [K]
-    P : pressure [MPa]
-    V : activation volume per mol [m**3 mol**-1]
-    d : average grain size [microns]
-    m : grain size exponent
-    f : fugacity of water [water molecules per 1e6 Si atoms]
-    r : water fugacity exponent
-
-    Assumptions
-    -----------
-    - Steady-state creep
-    - Moderate stress regime (roughly between 20 - 200 MPa)
-    - Effect of partial melt ignored
-    """
-
-    return (ss * (d**m) * (f**r) * np.exp((Q + P * V) / (R * T)) / A)**(1 / n)
-
-
-def thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
-    """ Apply the equation (model) of Turcotte and Schubert (1982) to estimate a
-    steady-state geotherm (i.e. the T at a given depth).
-
-    Parameters (all positive scalars)
-    ----------
-    z0 : surface elevation [km]
-    z : max. depth in the model [km]
-    T_surf : temperature at Earth surface [K]
-    Jq : average heat flux [mW m**-2]
-    A : average heat productivity [microW m**-3]
-    K : coefficient of thermal conductivity [W m**-1 K**-1]
-
-    Assumptions
-    -----------
-    TODO
-
-    Returns
-    -------
-    The temperature in K, a floating point number
-    """
-
-    return T_surf + ((Jq / K) * (z - z0)) - ((A / (2 * K)) * (z - z0)**2)
-
-
-# ==============================================================================#
 
 
 def init_plot(double_plot=True):
@@ -819,7 +589,7 @@ def init_plot(double_plot=True):
     Examples
     --------
     >>> fig (ax1, ax2) = init_plot()
-    >>> fig, ax1 = set_plot(doble_plot=False)
+    >>> fig, ax1 = init_plot(doble_plot=False)
 
     Important note: for a correct use of the script you must use ax1 and ax2
     as the name of the figure axes

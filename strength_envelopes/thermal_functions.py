@@ -32,12 +32,8 @@
 #                                                                              #
 # ============================================================================ #
 
-import numpy as np
 
-g = 9.80665  # average gravitational acceleration [m/s**2]
-R = 8.3144598  # universal gas constant [J mol**-1 K**-1]
-
-def ts_thermal_gradient_eq(z0, z, T_surf, Jq, A, K):
+def turcotte_schubert_eq(z0, z, T_surf, Jq, A, K):
     """ Apply the equation (model) of Turcotte and Schubert (1982) (ts) to estimate
     a steady-state geotherm (i.e. the T at a given depth)
 

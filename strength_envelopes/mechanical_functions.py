@@ -35,7 +35,7 @@
 import numpy as np
 
 g = 9.80665  # average gravitational acceleration [m/s**2]
-R = 8.3144598  # universal gas constant [J mol**-1 K**-1]
+
 
 def Anderson_fault(fault_type, depth, mu, C0, lamb, ro_crust):
     """ Returns the corresponding differential stress in MPa for a specific depth
@@ -67,31 +67,31 @@ def Anderson_fault(fault_type, depth, mu, C0, lamb, ro_crust):
     return diff_stress / 10**6
 
 
-    def power_law_creep(ss, A, n, Q, R, T, P, V, d, m, f, r):
-        """ Return the neccesary differential stress (Tresca criterion) in MPa
-        for permanently deforming a polycrystalline material at a given environmental
-        conditions.
+def power_law_creep(ss, A, n, Q, R, T, P, V, d, m, f, r):
+    """ Return the neccesary differential stress (Tresca criterion) in MPa
+    for permanently deforming a polycrystalline material at a given environmental
+    conditions.
 
-        Parameters (all positive scalars)
-        ----------
-        ss : strain rate [s**-1]
-        A : material constant [MPa**-n s**-1]
-        n : stress exponent
-        Q : activation energy [J mol**-1]
-        R : universal gas constant [J mol**-1 K**-1]
-        T : absolute temperature [K]
-        P : pressure [MPa]
-        V : activation volume per mol [m**3 mol**-1]
-        d : average grain size [microns]
-        m : grain size exponent
-        f : fugacity of water [water molecules per 1e6 Si atoms]
-        r : water fugacity exponent
+    Parameters (all positive scalars)
+    ----------
+    ss : strain rate [s**-1]
+    A : material constant [MPa**-n s**-1]
+    n : stress exponent
+    Q : activation energy [J mol**-1]
+    R : universal gas constant [J mol**-1 K**-1]
+    T : absolute temperature [K]
+    P : pressure [MPa]
+    V : activation volume per mol [m**3 mol**-1]
+    d : average grain size [microns]
+    m : grain size exponent
+    f : fugacity of water [water molecules per 1e6 Si atoms]
+    r : water fugacity exponent
 
-        Assumptions
-        -----------
-        - Steady-state creep
-        - Moderate stress regime (roughly between 20 - 200 MPa)
-        - Effect of partial melt ignored
-        """
+    Assumptions
+    -----------
+    - Steady-state creep
+    - Moderate stress regime (roughly between 20 - 200 MPa)
+    - Effect of partial melt ignored
+    """
 
-        return (ss * (d**m) * (f**r) * np.exp((Q + P * V) / (R * T)) / A)**(1 / n)
+    return (ss * (d**m) * (f**r) * np.exp((Q + P * V) / (R * T)) / A)**(1 / n)

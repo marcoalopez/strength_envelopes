@@ -32,7 +32,8 @@
 #                                                                              #
 # ============================================================================ #
 
-def get_quartz_values(flow_law=None):
+
+def quartz(flow_law=None):
     """Curated list of experimentally derived values defining quartz flow laws.
 
     flow_law : string or None
@@ -44,7 +45,16 @@ def get_quartz_values(flow_law=None):
     constant (A) [MPa**-n s**-1]
     """
 
-    if flow_law == 'HTD':  # from Hirth et al. (2001)
+    if flow_law is None:
+        print('Available flow laws:')
+        print("'HTD' from Hirth et al. (2004)")
+        print("'LP_wet' from Luan and Paterson (1992)")
+        print("'GT_wet' from Gleason and Tullis (1995)")
+        print("'HK_wet' from Holyoke and Kronenberg (2010)")
+        print("'RB_wet' from Rutter and Brodie (2004)")
+        return None
+
+    elif flow_law == 'HTD':  # from Hirth et al. (2001)
         n = 4.0  # stress exponent
         Q = 135000  # activation energy [J mol**-1]
         A = 10**(-11.2)  # material parameter [MPa**-n s**-1]
@@ -75,7 +85,7 @@ def get_quartz_values(flow_law=None):
     return n, Q, A
 
 
-def get_olivine_values(flow_law=None):
+def olivine(flow_law=None):
     """Curated list of experimentally derived values defining olivine flow laws.
 
     flow_law : string or None
@@ -87,50 +97,67 @@ def get_olivine_values(flow_law=None):
     constant (A) [MPa**-n s**-1], and the activation volume per mol (V) [m**3 mol**-1]
     """
 
-    if flow_law == 'HK_wet':  # from Hirth and Kohlstedt (2003). Wet Olivine
+    if flow_law is None:
+        print('Available flow laws:')
+        print("'HK_wet' from Hirth and Kohlstedt (2003)")
+        print("'HK_dry' # from Hirth and Kohlstedt (2003)")
+        print("'KJ_wet' from Karato and Jung (2003)")
+        print("'KJ_dry' from Karato and Jung (2003)")
+        print("'ZK_dry' from Zimmerman and Kohlstedt (2004)")
+        print("'Faul_dry' from Faul et al. (2011)")
+        print("'Ohuchi' from Ohuchi et al. (2015)")
+        return None
+
+    elif flow_law == 'HK_wet':  # from Hirth and Kohlstedt (2003). Wet Olivine
         n = 3.5  # stress exponent
         Q = 520000  # activation energy [J mol**-1]
         A = 10**(3.2)  # material parameter [MPa**-n s**-1]
         V = 2.2e-05  # activation volume per mol [m**3 mol**-1]
+        r = 0  # water fugacity exponent
 
     elif flow_law == 'HK_dry':  # from Hirth and Kohlstedt (2003). Dry Olivine
         n = 3.5
         Q = 530000
         A = 10**(5.0)
         V = 1.8e-05
+        r = 0  # not provided
 
     elif flow_law == 'KJ_wet':  # from Karato and Jung (2003). Wet olivine
         n = 3.0
         Q = 470000
         A = 10**(2.9)
         V = 2.4e-05
+        r = 0  # not provided
 
     elif flow_law == 'KJ_dry':  # from Karato and Jung (2003). Dry olivine
         n = 3.0
         Q = 510000
         A = 10**(6.1)
         V = 1.4e-05
+        r = 0  # not provided
 
     elif flow_law == 'ZK_dry':  # from Zimmerman and Kohlstedt (2004). Dry peridotite
         n = 4.3
         Q = 550000
         A = 10**(4.8)
         V = 0.0  # activation volume per mol not provided!
+        r = 0  # not provided
 
     elif flow_law == 'Faul_dry':  # from Faul et al. (2011). Dry olivine
         n = 8.2
         Q = 682000
         A = 0.3
         V = 0.0  # activation volume per mol not provided!
+        r = 0  # not provided
 
     elif flow_law == 'Ohuchi':  # from Ohuchi et al. (2015)
         n = 3.0
         Q = 423000
         A = 10**(-4.89)
         V = 17.6e-06
-        r = 1.25  # water fugacity exponent
+        r = 1.25
 
     else:
         raise ValueError("Olivine flow law name misspelled. Use 'HK_wet', 'HK_dry', 'KJ_wet', 'KJ_dry', 'ZK_dry', 'Faul_dry', or 'Ohuchi'")
 
-    return n, Q, A, V
+    return n, Q, A, V, r
