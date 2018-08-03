@@ -37,7 +37,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.constants import g, R
-from flow_laws import olivine, quartz
+from flow_laws import olivine, quartz, olivine_Idrissi
 import thermal_functions as tf
 import mechanical_functions as mf
 
@@ -111,8 +111,8 @@ def fric_strength(z, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot
 
     Examples
     --------
-    fric_strength(z=15, fault='normal')
-    fric_strength(z=20, fault='inverse', annot='lamb', lamb=0.5)
+    fric_strength(z=15, fault_type='normal')
+    fric_strength(z=20, fault_type='inverse', annot='lamb', lamb=0.5)
     fric_strength(z=15, color='red', linewidth=3)
 
     Calls functions
@@ -256,24 +256,26 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51),
     return T_values, depth_values
 
 
-def qtz_disloc_creep(z0, geotherm, flow_law='HTD', strain_rate=ref_sr, d=35, m=0.0, fug=0.0, r=0.0, **kwargs):
-    """ Plot flow law curves for dislocation creep in quartz in the differential stress
-    vs depth space. Only post-1992 dislocation creep flow laws are considered.
+def quartz_strength(geotherm, depths=(9, moho), flow_law='HTD', strain_rate=ref_sr,
+                    d=35, m=0.0, fug=0.0, r=0.0, **kwargs):
+    """ Plot quartz strength curves, i.e. the neccesary differential stress to make
+    polycrystalline quartz creep, in the differential stress vs depth space.
+    In case of dislocation creep flow laws, only post-1992 flow laws are considered.
 
     Parameters
     ----------
-    z0 : scalar
-        starting depth [km]
-
     geotherm : array_like (2-dimensional)
         temperature variation with depth [K] and corresponding depths [km]
 
-    flow_law : string, optional, default: 'HTD'
-        the flow law used, either 'HTD', 'LP_wet', 'GT_wet',
-        'HK_wet', or 'RB_wet'.
+    depths : tuple, optional
+        the starting and ending depth [km]. Default from 9 km down to the moho.
+
+    flow_law : string, optional
+        the flow law. Use quartz() to get a list of the different flow laws.
+        Default: 'HTD'
 
     strain_rate : scalar, optional
-        strain rate [s**-1]. Assumed average shear strain rate in the ductile
+        strain rate [s**-1]. Default average shear strain rate in the ductile
         lithosphere = 1.0e-14
 
     d : scalar, optional, default: 35
@@ -296,14 +298,14 @@ def qtz_disloc_creep(z0, geotherm, flow_law='HTD', strain_rate=ref_sr, d=35, m=0
     Assumptions
     -----------
     - The effect of pressure is ignored at crustal depths.
-    - The water fugacity is not well constrained for quartz flow laws. Hence the
-    constant exponent and the water fugacity are both set to zero by default.
+    - The water fugacity is not well constrained for dislocation creep flow laws.
+    Hence the constant exponent and the water fugacity are both set to zero by default.
     - The effect of partial melt is ignored.
 
     Examples
     --------
-    qtz_disloc_creep(z0=9, geotherm=my_model, color='red', linewidth=3)
-    qtz_disloc_creep(z0=10, geotherm=my_model, flow_law='GT_wet', strain_rate=5.0e-14)
+    quartz_strength(geotherm=my_model, color='red', linewidth=3)
+    quartz_strength(geotherm=my_model, flow_law='GT_wet', strain_rate=5.0e-14)
 
     Calls function(s)
     -----------------
@@ -311,40 +313,44 @@ def qtz_disloc_creep(z0, geotherm, flow_law='HTD', strain_rate=ref_sr, d=35, m=0
     """
 
     # extract temperature gradient and depths
-    T_gradient, depths = geotherm
+    T_list, depth_list = geotherm
 
-    # extract experimentally derived values for dislocation creep quartz flow law
+    # get experimentally derived values for dislocation creep quartz flow law
     n, Q, A = quartz(flow_law)
 
     # fix some values for dislocation creep quartz flow laws
     V = 0  # Activation volume per mol. Negligible at crustal depths.
     P = 0  # Pressure. Negligible at crustal depths.
 
-    # Select a specific range of temperature gradient according to depths z0 and moho
-    mask = np.logical_and(depths >= z0, depths <= moho)
-    T_masked = T_gradient[mask]
+    # Select a specific range of temperature gradient according to the range of depths
+    mask = np.logical_and(depth_list >= depths[0], depth_list <= depths[1])
+    T_gradient = T_list[mask]
 
     # estimate differential stress values
-    diff_stress = mf.power_law_creep(strain_rate, A, n, Q, R, T_masked, P, V, d, m, fug, r)
+    diff_stress = mf.power_law_creep(strain_rate, A, n, Q, R, T_gradient, P, V, d, m, fug, r)
 
     return ax1.plot(diff_stress, depths[mask], **kwargs)
 
 
-def ol_disloc_creep(geotherm, flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, fug=0.0, r=0.0, **kwargs):
-    """ Plot flow law curves for dislocation creep in olivine or peridotite in
-    the differential stress vs depth space.
+def olivine_strength(geotherm, depths=(moho, LAB), flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, fug=0.0, r=0.0, **kwargs):
+    """ Plot quartz strength curves, i.e. the neccesary differential stress to make
+    polycrystalline olivine [or preidotite creep, in the differential stress vs depth
+    space.
 
     Parameters
     ----------
     geotherm : array_like (2-dimensional)
         temperature variation wth depth [K] and corresponding depths [km]
 
+    depths : tuple, optional
+        the starting and ending depth [km]. Default from moho down to the LAB.
+
     flow_law : string, optional
-        the flow law default parameters, either 'HK_wet', 'HK_dry', 'KJ_wet',
-        'KJ_dry', 'ZK_dry', 'Faul_dry'. Default='HK_dry'
+        the flow law default.Use olivine() to get a list of the different flow laws.
+        Default='HK_dry'
 
     strain_rate : scalar, optional
-        strain rate [s**-1]. Assumed average shear strain rate in the ductile
+        strain rate [s**-1]. Default average shear strain rate in the ductile
         lithosphere = 1.0e-14
 
     d : scalar, optional
@@ -367,46 +373,80 @@ def ol_disloc_creep(geotherm, flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0
     Assumptions
     -----------
     - The effect of partial melt is ignored.
-    - Olivine dislocation creep only applies below the moho
+    - Two-layer model with the densities of the the crust and the mantle
+    averaged
 
     Examples
     --------
-    ol_disloc_creep(geotherm=my_model, flow_law='Faul_dry')
-    ol_disloc_creep(geotherm=my_model, fug=..., r=...)
+    olivine_strength(geotherm=my_model, flow_law='Faul_dry')
+    olivine_strength(geotherm=my_model, fug=..., r=...)
 
     Calls function(s)
     -----------------
-    get_olivine_values
-    power_law_creep
+    olivine from flow_laws.py
+    power_law_creep from mechanical functions.py
     """
 
     # extract temperature gradient and depths
-    T_gradient, depths = geotherm
+    T_list, depth_list = geotherm
 
     # extract experimentally derived values for dislcation creep olivine flow law
     n, Q, A, V, r = olivine(flow_law)
 
     # Select a specific range of temperature gradient according to moho and
     # LAB depths
-    mask = np.logical_and(depths >= moho, depths <= LAB)
-    T_masked = T_gradient[mask]
+    mask = np.logical_and(depth_list >= depths[0], depth_list <= depths[1])
+    T_gradient = T_list[mask]
 
     # create a list with the corresponding pressures
-    P_list = []  # preallocate this list if length is usually larger than 1e6! TODO
-    for z in depths[mask]:
-        ro = ((moho / z) * ro_crust) + (((z - moho) / z) * ro_mantle)
-        P = ro * g * z
-        P_list.append(P)
-    P_array = np.array(P_list)
+    depth_list = depth_list[mask]
+    density_list = ((moho / depth_list) * ro_crust) + (((depth_list - moho) / depth_list) * ro_mantle)
+    P_list = density_list * g * depth_list
 
     # estimate differential stress values
-    diff_stress = mf.power_law_creep(strain_rate, A, n, Q, R, T_masked, P_array, V, d, m, fug, r)
+    diff_stress = mf.power_law_creep(strain_rate, A, n, Q, R, T_gradient, P_list, V, d, m, fug, r)
 
     return ax1.plot(diff_stress, depths[mask], **kwargs)
 
 
-# ==============================================================================#
-# OTHER FUNCTIONS
+def semi_empirical_olivine(geotherm, depths=(moho, LAB), epsilon=1e-15):
+    """ Estimate the neccesary differential stress to deform olivine by
+    dislocation creep based on the semi-empirical flow law...
+    """
+
+    # get list of temperatures for a specific depth range
+    index = (np.abs(geotherm[0] - depths[0])).argmin()
+    T_array = geotherm[0][index:]
+    T_array = T_array + 273.15
+
+    # test whether T are below 300 or above 1200 K (model not )
+
+    for index, T in enumerate(T_array):
+        # resolve the equation in the range 0 to 1000 MPa, if not make a warning
+        min_stress, max_stress = 0, 1000
+        num_guesses, estimate, reference = 0, 0, 1
+        guess_stress = (max_stress + min_stress) / 2
+
+        # bisection search algorithm
+        while abs(reference - estimate) >= epsilon:
+
+            if num_guesses >= 100:
+                print('The algorithm reached the maximum number of guesses without finding a solution!')
+                print('Check the inputs (units) or try incresing the number of guesses (rarely useful)')
+                print('last guess:', estimate)
+                return None
+
+            estimate = olivine_Idrissi(R, T, stress)
+
+            if reference - estimate > 0:
+                max_stress = guess_stress
+            else:
+                min_stress = guess_stress
+
+            guess_stress = (max_stress + min_stress) / 2
+            num_guesses += 1
+
+    pass
 
 
 def triple_point(t_point='Holdoway'):
@@ -452,34 +492,28 @@ def borehole_data(borehole='KTB', T_surf=280.65):
 
     if borehole == 'KTB':
         # Temperature gradient [K/km] (Emmermann and Lauterjung, 1997)
-        T_KTB_grad = 27.5
+        T_gradient = 27.5
         max_depth = 9.101  # [km]
-        ax2.plot([T0, max_depth * T_KTB_grad + T0],
-                 [0, max_depth], label='KTB borehole')
-        ax2.plot([max_depth * T_KTB_grad + T0, moho * T_KTB_grad],
-                 [max_depth, moho], '--')
+        label = 'KTB borehole'
 
     elif borehole == 'Kola':
         # Temperature gradient [K/km] (Smithson et al., 2000)
-        T_Kola_Grad = 15.5
+        T_gradient = 15.5
         max_depth = 12.262  # [km]
-        ax2.plot([T0, max_depth * T_Kola_Grad + T0],
-                 [0, max_depth], label='Kola borehole')
-        ax2.plot([max_depth * T_Kola_Grad + T0, moho * T_Kola_Grad],
-                 [max_depth, moho], '--')
+        label = 'Kola borehole'
 
     elif borehole == 'Gravberg':
         # Temperature gradient [K/km] (Lund and Zoback, 1999)
-        T_Baltic_Grad = 16.1
+        T_gradient = 16.1
         max_depth = 6.779  # [km]
-        ax2.plot([T0, max_depth * T_Baltic_Grad + T0],
-                 [0, max_depth], label='Gravberg-1 borehole')
-        ax2.plot([max_depth * T_Baltic_Grad + T0, moho * T_Baltic_Grad],
-                 [max_depth, moho], '--')
+        label = 'Gravberg-1 borehole'
 
     else:
         print(' ')
         raise ValueError("Borehole name misspelled. Use 'KTB', 'Kola' or 'Gravberg'")
+
+    ax2.plot([T0, max_depth * T_gradient + T0], [0, max_depth], label=label)
+    ax2.plot([max_depth * T_gradient + T0, moho * T_gradient], [max_depth, moho], '--')
 
     return None
 
@@ -495,17 +529,20 @@ def granite_solidus(**kwargs):
         norm, cmap, transform, etc.
     """
 
+    # import data from Johannes and Holtz for wet granite
+    solidus_wet, P_wet = np.loadtxt('solidus_granite.csv', skiprows=1, delimiter=';', unpack=True)
+
     # convert pressures to depths
-    depths_wet_Gr = ((P_list_wetGr * 1.0e6) / (ro_crust * g)) / 1000
+    depths_wetGr = ((P_wet * 1.0e6) / (ro_crust * g)) / 1000
 
     # Estimate melting temperature at the base of the moho according to
     # the following linear relation: T = (P + 9551.25) / 9.93
-    P_moho = ((moho * 1000) * g * ro_crust) / 1.0e6
-    T_solidus_moho = (P_moho + 9551.25) / 9.93
+    P_at_moho = ((moho * 1000) * g * ro_crust) / 1.0e6
+    solidus_moho = (P_at_moho + 9551.25) / 9.93
 
     # plot
-    ax2.plot(T_list_wetGr, depths_wet_Gr, 'k--', **kwargs)
-    ax2.plot([961.86, T_solidus_moho], [0.0, moho], 'k--', **kwargs)
+    ax2.plot(solidus_wet, depths_wetGr, **kwargs)
+    ax2.plot([961.86, solidus_moho], [0.0, moho], **kwargs)
 
     print('')
     print('values from Johannes and Holtz (1996)')
@@ -529,12 +566,22 @@ def peridotite_solidus(**kwargs):
     pass
 
 
-def goetze_line(**kwargs):
+def goetze_line(PREM=False, **kwargs):
     """Plot the Goetze's criterion (Briegel & Goetze, 1978) in the differential
-    stress vs deep space.
+    stress vs deep space. Goetze's criterion is satisfied when:
+
+    diff stress = 2 / 3 * ro * g * h
+
+    where ro is rock density, g is the acceleration of gravity and h is the depth
+    or height of the rock column.
 
     Parameters
     ----------
+    PREM : bool
+        if False (default) the Goetze line is constructed assuming average density
+        values for the crust and the lithospheric mantle. If True, the PREM model
+        is used instead
+
     kwargs : `~matplotlib.collections.Collection` properties
         Eg. alpha, edgecolor(ec), facecolor(fc), linewidth(lw), linestyle(ls),
         norm, cmap, transform, etc.
@@ -548,25 +595,29 @@ def goetze_line(**kwargs):
 
     Future implementations
     ----------------------
-    Use the PREM model - TODO
+    Goetze criterion using the PREM model - TODO
     """
-    # convert km to meters
-    z_moho = moho * 1000
-    z_lithos = LAB * 1000
 
-    # Depths [in km]
-    depths = [0, moho, LAB]
+    if PREM is False:
+        # Estimate the corresponding diff stress [in MPa]
+        # at the base of the moho and the LAB
+        diff_stress_moho = (2 / 3) * (ro_crust / 1000) * g * moho
+        average_ro_lithosphere = ((moho / LAB) * (ro_crust / 1000)) + (((LAB - moho) / LAB) * (ro_mantle / 1000))
+        diff_stress_LAB = (2 / 3) * average_ro_lithosphere * g * LAB
+        Goetze_diff_stress = [0, diff_stress_moho, diff_stress_LAB]
 
-    # Estimate the pressures [in MPa] at the corresponding depths
-    moho_P = (ro_crust * g * z_moho) / 1e6
-    ro = ((z_moho / z_lithos) * ro_crust) + (((z_lithos - z_moho) / z_lithos) * ro_mantle)
-    lithos_base_P = (ro * g * z_lithos) / 1e6
-    lithos_P = [0, moho_P, lithos_base_P]
+        return ax1.plot(Goetze_diff_stress, [0, moho, LAB], label="Goetze line", **kwargs)
 
-    # ax1.fill_between()
+    elif PREM is True:
+        depth, diff_stress = np.loadtxt('PREM_model.csv', skiprows=2, delimiter=';', usecols=(0, 3), unpack=True)
+        diff_stress = diff_stress[depth <= LAB]
+        depth = depth[depth <= LAB]
 
-    return ax1.plot(lithos_P, depths, 'k--', label="Goetze's criterion'", **kwargs)
+        return ax1.plot(diff_stress, depth, label="Goetze line", **kwargs)
 
+    else:
+        print(' ')
+        raise ValueError('PREM must be True or False')
 
 # ==============================================================================#
 
@@ -645,20 +696,16 @@ def init_plot(double_plot=True):
         return fig, ax
 
 
-T_list_wetGr = np.array([632.203, 635.593, 640.254, 644.915, 647.034, 649.186, 652.128, 655.561, 660.220, 665.860, 671.010, 676.895,
-                         684.251, 692.589, 700.190, 709.999, 719.072, 730.106, 744.329, 757.815, 778.413, 797.295, 815.686, 856.391, 906.415, 961.86])
-P_list_wetGr = np.array([1297.289, 1040.060, 787.048, 546.687, 468.675, 417.936, 371.570, 332.525, 294.700, 260.535, 234.912,
-                         210.509, 186.106, 162.923, 144.620, 122.657, 105.575, 87.273, 68.970, 56.769, 45.177, 37.856, 32.366, 25.045, 18.334, 0.00])
-
-
-texto = """
+welcome = """
 ======================================================================================
 Welcome to Strength envelopes script v1.0
 ======================================================================================
 
 Strength envelopes is a free open-source cross-platform script to generate strength
 envelopes.
+"""
 
+functions_list = """
 METHODS AVAILABLE
 ====================  ================================================================
 Main Functions        Description
@@ -679,10 +726,10 @@ borehole_data         Plot temperature gradients from superdeep boreholes
 ====================  ================================================================
 
 You can get information on the different methods by:
-    (1) Typing the command help in the console as follows: help(name of the function)
-        e.g. >>> help(stable_geotherm)
-    (2) In the Spyder IDE by writing the name of the function and clicking Ctrl+I
-    (3) Visit script documentation at https://github.com/marcoalopez/Strength_envelopes
+    (1) Typing help plus the name of the function e.g. help(stable_geotherm)
+    (2) In the Spyder IDE by writing the name of the function and clicking Ctrl + I
+    (3) Visiting the script documentation at https://github.com/marcoalopez/strength_envelopes
+    (4) Get a list of the methods available: print(functions_list)
 
 
 EXAMPLES
@@ -693,5 +740,5 @@ fig, (ax1, ax2) = init_plot()
 For more examples see documentation or use help(function_name)
 """
 
-print(' ')
-print(texto)
+print(welcome)
+print(functions_list)

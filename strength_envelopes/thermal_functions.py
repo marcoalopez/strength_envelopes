@@ -1,6 +1,6 @@
 # ============================================================================ #
 #                                                                              #
-#    Strenght envelopes                                                        #
+#    This is part of the strenght_envelopes script                             #
 #    A Python script for plotting lithosphere and crust strength envelopes     #
 #                                                                              #
 #    Copyright (c) 2017-present   Marco A. Lopez-Sanchez                       #
@@ -59,8 +59,8 @@ def turcotte_schubert_eq(z0, z, T_surf, Jq, A, K):
 
 
 def thermal_conductivity(T, K_0):
-    """ Estimate the temperature-dependent thermal conductivity in the crust
-    using the model of Druham et al. (1987)
+    """ Estimate the temperature-dependent thermal conductivity based on
+    the model of Druham et al. (1987)
 
     Parameters
     ----------

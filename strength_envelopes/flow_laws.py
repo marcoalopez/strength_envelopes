@@ -32,6 +32,8 @@
 #                                                                              #
 # ============================================================================ #
 
+import numpy as np
+
 
 def quartz(flow_law=None):
     """Curated list of experimentally derived values defining quartz flow laws.
@@ -103,7 +105,7 @@ def olivine(flow_law=None):
         print("'HK_dry' # from Hirth and Kohlstedt (2003)")
         print("'KJ_wet' from Karato and Jung (2003)")
         print("'KJ_dry' from Karato and Jung (2003)")
-        print("'ZK_dry' from Zimmerman and Kohlstedt (2004)")
+        print("'ZK_dry' (dry peridotite) from Zimmerman and Kohlstedt (2004)")
         print("'Faul_dry' from Faul et al. (2011)")
         print("'Ohuchi' from Ohuchi et al. (2015)")
         return None
@@ -161,3 +163,30 @@ def olivine(flow_law=None):
         raise ValueError("Olivine flow law name misspelled. Use 'HK_wet', 'HK_dry', 'KJ_wet', 'KJ_dry', 'ZK_dry', 'Faul_dry', or 'Ohuchi'")
 
     return n, Q, A, V, r
+
+
+def olivine_Idrissi(R, T, stress):
+    """Semi-empirical olivine flow law for the uppermost mantle based on Idrissi
+    et al. (2016). It resolves the equation:
+
+    ss = 1e6 * exp{(-566e3 / (R * T)) * [1 - sqrt(stress / 3.8)]**2}
+
+    Parameters
+    ----------
+    R : scalar
+        universal gas constant
+
+    geotherm : scalar
+        the temperature in K
+
+    stress : scalar or numpy array_like
+        the stress in MPa
+
+    Returns
+    -------
+    the strain rate in s**-1
+    """
+    # convert from MPa to GPa
+    stress = stress / 1000
+
+    return 1e6 * np.exp((-556e3 / (R * T)) * (1 - np.sqrt(stress / 3.8))**2)
