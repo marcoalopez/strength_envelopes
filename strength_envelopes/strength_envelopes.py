@@ -29,6 +29,7 @@
 #        Python version 3.5 or higher                                          #
 #        Numpy version 1.11 or higher                                          #
 #        Matplotlib version 2.0 or higher                                      #
+#        Scipy version X.x or higher                                           #
 #                                                                              #
 # ============================================================================ #
 
@@ -36,6 +37,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import pandas as pd
 from scipy.constants import g, R
 from flow_laws import olivine, quartz, olivine_Idrissi
 import thermal_functions as tf
@@ -45,17 +47,14 @@ import mechanical_functions as mf
 # DEFAULT INPUT PARAMETERS
 
 # Mechanical constants (CAUTION! these are global variables and thus changing their values will affect the results of different functions)
-ro_crust = 2750  # average rock density in the crust [kg/m**3]
-ro_mantle = 3330  # average rock density in the mantle [kg/m**3]
 ref_sr = 1.0e-14  # Reference average shear strain rate in the ductile lithosphere [s**-1]; see Twiss and Moores (2007, p.488)
-moho = 34.4  # Average continental crust thickness [km] (Huang et al. 2013)
-LAB = 81  # Average lithosphere-asthenosphere boundary (LAB) [km] beneath tectonically altered regions (Rychert and Shearer, 2009)
 
 # set plot style
 plot_style = 'ggplot'
 mpl.style.use(plot_style)
 # you can use other styles as well, see the following gallery:
 # https://tonysyu.github.io/raw_content/matplotlib-style-gallery/gallery.html
+
 # ==============================================================================#
 # DO NOT MODIFY THE CODE BELOW - UNLESS YOU KNOW WHAT YOU'RE DOING!
 
@@ -64,20 +63,78 @@ ax2 = None
 ax = None
 
 
-def fric_strength(z, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot=None, **kwargs):
+def set_lithos(moho=38.8,  # Average continental crust thickness [km] (Hacker et al. 2015)
+               Lab=81,  # Average lithosphere-asthenosphere boundary (Lab) [km] beneath tectonically altered regions (Rychert and Shearer, 2009)
+               crust_densities=(2700, 2828, 3067),  # average rock density of the three-layer crust [kg/m**3]; see Table 4 in Hacker et al. 2015
+               crust_layers=(0.353, 0.688),  # depth of the base with respect to the depth of the moho
+               mantle_density=3300,  # average rock density in the lithospheric mantle [kg/m**3]
+               plot=False):  # If you want to generate a depth vs mean density plot set this to True
+    """ Estimate the mean density for...It assumes a three-layer model for the
+    crust with different densities. It returns two numpy arrays, one with 
+
+    Parameters
+    ----------
+
+    Assumptions
+    -----------
+    - the variation of g with depth is negligible
+
+    - The surface elevation is always set to zero and thus the maximun depth
+    is measured relative to the surface elevation not the mean sea level
+    (Lagrangian reference frame)
+
+    Examples
+    --------
+    lithosphere = set_lithos()
+
+    Calls function(s)
+    -----------------
+    calc_average_density from mechanical_functions.py
+    """
+
+    # Estimate a mesh density so that there is a measure every 10 m
+    mesh_density = Lab * 100
+
+    # Get a list of depths [km] and corresponding average density [kg/m**3]
+    depths = np.linspace(0, Lab, mesh_density)
+    densities = mf.calc_average_density(depths, moho, Lab, crust_densities, crust_layers, mantle_density)
+    pressures = densities * g * depths / 1e6  # /1e6 to obtain GPa
+
+    if plot is True:
+        fig, ax = plt.subplots()
+
+        plt.gca().invert_yaxis()
+        plt.gca().xaxis.tick_top()
+        plt.gca().xaxis.set_label_position('top')
+        ax.set(xlabel='Mean density ($kg/m^3$)', ylabel='Depth (km)')
+        ax.plot(densities, depths)
+        ax.plot([np.min(densities), np.max(densities)], [moho, moho], 'k-')
+        #ax.text(0, moho - moho / 90, 'Moho', fontsize=10)
+        ax.plot([np.min(densities), np.max(densities)], [Lab, Lab], 'k-')
+        #ax.text(0, Lab - Lab / 90, 'lithosphere base', fontsize=10)
+        #ax.plot(0, 0)
+
+        fig.tight_layout()
+
+    lithosphere_model = pd.DataFrame({'depth': depths, 'mean_density': densities, 'pressure': pressures})
+
+    return lithosphere_model
+
+
+def fric_strength(lithosphere, max_depth, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot=None, **kwargs):
     """ Estimate and plot frictional strength slopes in the depth vs differential stress space.
 
     Parameters
     ----------
-    z : scalar
+    max_depth : scalar
         maximum depth [km].
 
     fault_type : string
-        the type of fault, either 'inverse', 'normal' or 'strike-slip'.
+        the type of fault, either 'inverse', 'normal' or 'strike-slip'
 
     mu : scalar between 0 an 1, optional
         Coefficient of friction. Default value 0.73; this is the Rutter and Glover
-        (2012) coefficient recalculated from Byerlee (1978) data.
+        (2012) coefficient recalculated from Byerlee (1978) data
 
     lamb : scalar between 0 and 1, optional
         Hubbert-Rubbey coefficient of fluid pressure. Zero is for dry conditions.
@@ -111,32 +168,23 @@ def fric_strength(z, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot
 
     Examples
     --------
-    fric_strength(z=15, fault_type='normal')
-    fric_strength(z=20, fault_type='inverse', annot='lamb', lamb=0.5)
-    fric_strength(z=15, color='red', linewidth=3)
+    fric_strength(max_depth=15, fault_type='normal')
+    fric_strength(max_depth=20, fault_type='inverse', annot='lamb', lamb=0.5)
+    fric_strength(max_depth=15, color='red', linewidth=3)
 
-    Calls functions
+    Calls function(s)
     -----------------
-    Anderson_thrust; Anderson_extension; Anderson_strike
+    Anderson_fault from mechanical_functions.py
     """
 
+    depths = lithosphere['depths'][lithosphere['depths'] <= max_depth]
+    densities = densities[depths <= max_depth]
+
     # Compute differential stress values depending on the type of fault
-    if fault_type == 'strike-slip':
-        x = [mf.Anderson_fault('strike', 0, mu, C0, lamb, ro_crust),
-             mf.Anderson_fault('strike', z, mu, C0, lamb, ro_crust)]
-
-    elif fault_type == 'inverse':
-        x = [mf.Anderson_fault('thrust', 0, mu, C0, lamb, ro_crust),
-             mf.Anderson_fault('thrust', z, mu, C0, lamb, ro_crust)]
-
-    elif fault_type == 'normal':
-        x = [mf.Anderson_fault('extension', 0, mu, C0, lamb, ro_crust),
-             mf.Anderson_fault('extension', z, mu, C0, lamb, ro_crust)]
-
+    if fault_type == 'inverse' or 'normal' or 'strike-slip':
+            diffs = mf.Anderson_fault(fault_type, depths, densities, mu, C0, lamb, g)
     else:
         raise ValueError("Faul type misspelled. Please use 'inverse', 'normal' or 'strike-slip'.")
-
-    y = [0, z]
 
     print('')
     print('fault type:', fault_type)
@@ -147,23 +195,27 @@ def fric_strength(z, fault_type='strike-slip', mu=0.73, lamb=0.36, C0=0.0, annot
 
     if annot is not None:
         if annot == 'type':
-            ax1.plot(x, y, label='{n}'.format(n=fault_type))
+            ax1.plot(diffs, depths, label='{n}'.format(n=fault_type))
             ax1.legend(fontsize=9)
             return None
         elif annot == 'lambda':
-            ax1.plot(x, y, label=r'$\lambda$ = {n}'.format(n=lamb))
+            ax1.plot(diffs, depths, label=r'$\lambda$ = {n}'.format(n=lamb))
             ax1.legend(fontsize=9)
             return None
         elif annot == 'mu':
-            ax1.plot(x, y, label=r'$\mu$ = {n}'.format(n=mu))
+            ax1.plot(diffs, depths, label=r'$\mu$ = {n}'.format(n=mu))
             ax1.legend(fontsize=9)
             return None
 
-    return ax1.plot(x, y, **kwargs)
+    return ax1.plot(diffs, depths, **kwargs)
 
 
-def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51),
-                    mantle_params=(34, 0.01, 3.35), **kwargs):
+def stable_geotherm(depths,
+                    moho,
+                    T_surf=280.65,
+                    crust_params=(65, 0.97, 2.51),
+                    mantle_params=(34, 0.01, 3.35),
+                    **kwargs):
     """ Estimate and plot a steady-state thermal gradient for the continental
     lithosphere considering a two-layer model (crust vs lithospheric mantle).
     It uses the Turcotte and Schubert (1982) model (see thermal_gradient_eq
@@ -201,26 +253,26 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51),
     -----------
     - The same average thermal values (Jq, A, K) apply for whole crust and
     the lithospheric mantle.
-    - The model requires providing the depth of the lithosphere base (LAB).
-    - The surface elevation is always set to zero and hence the LAB depth
+    - The model requires providing the depth of the lithosphere base (Lab).
+    - The surface elevation is always set to zero and hence the Lab depth
     is measured relative to the surface elevation not the mean sea level
     (Lagrangian reference frame).
-    - The thermal properities of the rocks are considered +-isotropic.
+    - The thermal properities of the rocks are considered isotropic.
     - The temperature dependence of thermal conductivity is neglected.
 
     Examples
     --------
-    my_model = stable_geotherm()
-    another_model = stable_geotherm(crust_params=(75, 0.97, 2.51), color='orange')
+    lithosphere['temp'] = stable_geotherm()
+    lithosphere['temp_hot'] = stable_geotherm(crust_params=(75, 0.97, 2.51), color='orange')
 
-    Call function
-    -------------
-    thermal_gradient_eq
+    Call function(s)
+    ----------------
+    turcotte_schubert_eq from thermal_functions.py
 
     Returns
     -------
-    Two 1D numpy arrays. One containing the variation of temperature [K]
-    with depth and other with the corresponding depths [m].
+    A numpy array containing the variation of temperature [K]
+    with depth.
     """
 
     # extract thermal parameters
@@ -231,16 +283,24 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51),
     Tg_crust = Jq_crust / K_crust
     Tg_mantle = Jq_mantle / K_mantle
 
-    # Generate a mesh of depth values [km]
-    depth_values = np.linspace(0, LAB, 2**12)  # mesh density = 2^12
-
     # Estimate stable geotherm
-    T_crust = tf.turcotte_schubert_eq(0, depth_values[depth_values <= moho], T_surf, Jq_crust, A_crust, K_crust)
-    new_ref_frame = depth_values[depth_values <= moho][-1]
-    T_mantle = tf.turcotte_schubert_eq(new_ref_frame, depth_values[depth_values > moho], T_crust[-1], Jq_mantle, A_mantle, K_mantle)
+    T_crust = tf.turcotte_schubert_eq(0,
+                                      depths[depths <= moho],
+                                      T_surf,
+                                      Jq_crust,
+                                      A_crust,
+                                      K_crust)
+
+    new_ref_frame = depths[depths <= moho][-1]
+    T_mantle = tf.turcotte_schubert_eq(new_ref_frame,
+                                       depths[depths > moho],
+                                       T_crust[-1],
+                                       Jq_mantle,
+                                       A_mantle,
+                                       K_mantle)
     T_values = np.hstack((T_crust, T_mantle))
 
-    T_at_moho_index = int(np.argwhere(depth_values <= moho)[-1])
+    T_at_moho_index = int(np.argwhere(depths <= moho)[-1])
     T_at_moho = T_values[T_at_moho_index] - 273.15
 
     print(' ')
@@ -251,13 +311,17 @@ def stable_geotherm(T_surf=280.65, crust_params=(65, 0.97, 2.51),
     print('The average temperature gradient in the lithospheric mantle is {val} [K km-1]' .format(val=round(Tg_mantle, 2)))
 
     # plot data in the temperature vs depth space (ax2) [C deg vs km]
-    ax2.plot(T_values - 273.15, depth_values, '-', label='Geothermal gradient', **kwargs)
+    ax2.plot(T_values - 273.15, depths, '-', label='Geothermal gradient', **kwargs)
 
-    return T_values, depth_values
+    return T_values
 
 
-def quartz_strength(geotherm, depths=(9, moho), flow_law='HTD', strain_rate=ref_sr,
-                    d=35, m=0.0, fug=0.0, r=0.0, **kwargs):
+def quartz_strength(lithosphere,
+                    flow_law='HTD',
+                    strain_rate=ref_sr,
+                    d=35, m=0.0,  # grain size
+                    fug=0.0, r=0.0,  # water fugacity
+                    **kwargs):
     """ Plot quartz strength curves, i.e. the neccesary differential stress to make
     polycrystalline quartz creep, in the differential stress vs depth space.
     In case of dislocation creep flow laws, only post-1992 flow laws are considered.
@@ -299,7 +363,8 @@ def quartz_strength(geotherm, depths=(9, moho), flow_law='HTD', strain_rate=ref_
     -----------
     - The effect of pressure is ignored at crustal depths.
     - The water fugacity is not well constrained for dislocation creep flow laws.
-    Hence the constant exponent and the water fugacity are both set to zero by default.
+    Hence the constant exponent and the water fugacity are both set to zero
+    by default.
     - The effect of partial melt is ignored.
 
     Examples
@@ -309,30 +374,32 @@ def quartz_strength(geotherm, depths=(9, moho), flow_law='HTD', strain_rate=ref_
 
     Calls function(s)
     -----------------
-    power_law_creep
+    quartz from flow_laws.py
+    power_law_creep from mechanical_functions.py
     """
-
-    # extract temperature gradient and depths
-    T_list, depth_list = geotherm
 
     # get experimentally derived values for dislocation creep quartz flow law
     n, Q, A = quartz(flow_law)
 
-    # fix some values for dislocation creep quartz flow laws
+    # fix some values
     V = 0  # Activation volume per mol. Negligible at crustal depths.
     P = 0  # Pressure. Negligible at crustal depths.
 
     # Select a specific range of temperature gradient according to the range of depths
     mask = np.logical_and(depth_list >= depths[0], depth_list <= depths[1])
-    T_gradient = T_list[mask]
+    T = geotherm[mask]
 
     # estimate differential stress values
-    diff_stress = mf.power_law_creep(strain_rate, A, n, Q, R, T_gradient, P, V, d, m, fug, r)
+    diff_stress = mf.power_law_creep(strain_rate, A, n, Q, R, T, P, V, d, m, fug, r)
 
     return ax1.plot(diff_stress, depths[mask], **kwargs)
 
 
-def olivine_strength(geotherm, depths=(moho, LAB), flow_law='HK_dry', strain_rate=ref_sr, d=1000, m=0.0, fug=0.0, r=0.0, **kwargs):
+def olivine_strength(lithosphere,
+                     flow_law='HK_dry',
+                     strain_rate=ref_sr,
+                     d=1000, m=0.0,
+                     fug=0.0, r=0.0, **kwargs):
     """ Plot quartz strength curves, i.e. the neccesary differential stress to make
     polycrystalline olivine [or preidotite creep, in the differential stress vs depth
     space.
@@ -343,7 +410,7 @@ def olivine_strength(geotherm, depths=(moho, LAB), flow_law='HK_dry', strain_rat
         temperature variation wth depth [K] and corresponding depths [km]
 
     depths : tuple, optional
-        the starting and ending depth [km]. Default from moho down to the LAB.
+        the starting and ending depth [km]. Default from moho down to the Lab.
 
     flow_law : string, optional
         the flow law default.Use olivine() to get a list of the different flow laws.
@@ -394,7 +461,7 @@ def olivine_strength(geotherm, depths=(moho, LAB), flow_law='HK_dry', strain_rat
     n, Q, A, V, r = olivine(flow_law)
 
     # Select a specific range of temperature gradient according to moho and
-    # LAB depths
+    # Lab depths
     mask = np.logical_and(depth_list >= depths[0], depth_list <= depths[1])
     T_gradient = T_list[mask]
 
@@ -409,9 +476,9 @@ def olivine_strength(geotherm, depths=(moho, LAB), flow_law='HK_dry', strain_rat
     return ax1.plot(diff_stress, depths[mask], **kwargs)
 
 
-def semi_empirical_olivine(geotherm, depths=(moho, LAB), epsilon=1e-15):
+def semi_empirical_olivine(geotherm, depths, epsilon=1e-15):
     """ Estimate the neccesary differential stress to deform olivine by
-    dislocation creep based on the semi-empirical flow law...
+    dislocation creep based on the semi-empirical flow laws...TODO
     """
 
     # get list of temperatures for a specific depth range
@@ -566,21 +633,21 @@ def peridotite_solidus(**kwargs):
     pass
 
 
-def goetze_line(PREM=False, **kwargs):
-    """Plot the Goetze's criterion (Briegel & Goetze, 1978) in the differential
-    stress vs deep space. Goetze's criterion is satisfied when:
+def goetze_line(fluid_pressure=0.36, **kwargs):
+    """Plot the Goetze's criterion (Kohlstedt et al. 1995) in the differential
+    stress vs deep space. Goetze's criterion is satisfied when rock strength
+    measured as differential stress (i.e. plastic yielding) becomes less than
+    the effective confining pressure. This is:
 
-    diff stress = 2 / 3 * ro * g * h
+    diff stress = (ro * g * h) * lambda
 
-    where ro is rock density, g is the acceleration of gravity and h is the depth
-    or height of the rock column.
+    where ro is rock density, g is the acceleration of gravity, h is the depth
+    or height of the rock column, and lambda the coefficient of fluid pressure.
 
     Parameters
     ----------
-    PREM : bool
-        if False (default) the Goetze line is constructed assuming average density
-        values for the crust and the lithospheric mantle. If True, the PREM model
-        is used instead
+    pore_fluid : scalar between 0 (dry conditions) and 1
+        the coefficient of fluid pressure. Default = 0.36
 
     kwargs : `~matplotlib.collections.Collection` properties
         Eg. alpha, edgecolor(ec), facecolor(fc), linewidth(lw), linestyle(ls),
@@ -589,35 +656,40 @@ def goetze_line(PREM=False, **kwargs):
     Assumptions
     -----------
     - g does not vary with depth (constant value)
-    - Average density for the entire crust is 2750 kg/m**3
-    - Average density for the lithospheric mantle is 3330 kg/m**3
     - Surface elevation set to 0 km
-
-    Future implementations
-    ----------------------
-    Goetze criterion using the PREM model - TODO
     """
 
-    if PREM is False:
-        # Estimate the corresponding diff stress [in MPa]
-        # at the base of the moho and the LAB
-        diff_stress_moho = (2 / 3) * (ro_crust / 1000) * g * moho
-        average_ro_lithosphere = ((moho / LAB) * (ro_crust / 1000)) + (((LAB - moho) / LAB) * (ro_mantle / 1000))
-        diff_stress_LAB = (2 / 3) * average_ro_lithosphere * g * LAB
-        Goetze_diff_stress = [0, diff_stress_moho, diff_stress_LAB]
+    diff_stress_moho = (ro_crust / 1000) * g * moho
+    average_ro_lithosphere = mf.calc_average_density(moho, Lab, ro_crust, ro_mantle)
+    diff_stress_Lab = average_ro_lithosphere * g * Lab
+    Goetze_diff_stress = [0, diff_stress_moho, diff_stress_Lab]
+    Goetze_diff_stress = Goetze_diff_stress * (1 - fluid_pressure)
 
-        return ax1.plot(Goetze_diff_stress, [0, moho, LAB], label="Goetze line", **kwargs)
+    return ax1.plot(Goetze_diff_stress, [0, moho, Lab], label="Goetze line", **kwargs)
 
-    elif PREM is True:
-        depth, diff_stress = np.loadtxt('PREM_model.csv', skiprows=2, delimiter=';', usecols=(0, 3), unpack=True)
-        diff_stress = diff_stress[depth <= LAB]
-        depth = depth[depth <= LAB]
 
-        return ax1.plot(diff_stress, depth, label="Goetze line", **kwargs)
+def set_moho(axe, rango=(0, 600)):
+    """ Plot the moho
+    """
 
-    else:
-        print(' ')
-        raise ValueError('PREM must be True or False')
+    axe.plot(rango, [moho, moho], 'k-')
+    axe.text(0, moho - moho / 90, 'Moho', fontsize=10)
+    axe.plot(rango, [Lab, Lab], 'k-')
+    axe.text(0, Lab - Lab / 90, 'lithosphere base', fontsize=10)
+
+    return('')
+
+
+def set_Lab(axe, rango=(0, 600)):
+    """ Plot the Lithosphere to Astenosphere Boundary (Lab)
+    """
+
+    axe.plot(rango, [moho, moho], 'k-')
+    axe.text(0, moho - moho / 90, 'Moho', fontsize=10)
+    axe.plot(rango, [Lab, Lab], 'k-')
+    axe.text(0, Lab - Lab / 90, 'lithosphere base', fontsize=10)
+
+    return('')
 
 # ==============================================================================#
 
@@ -630,8 +702,8 @@ def init_plot(double_plot=True):
     moho : positive scalar
         the depth of the moho in km
 
-    LAB : positive scalar
-        the depth of the lithosphere-asthenosphere boundary (LAB)
+    Lab : positive scalar
+        the depth of the lithosphere-asthenosphere boundary (Lab)
 
     double_plot : boolean
         If True, two plots will appear: a diff. stress vs depth and a T vs depth.
@@ -656,11 +728,7 @@ def init_plot(double_plot=True):
         plt.gca().invert_yaxis()
         plt.gca().xaxis.tick_top()
         plt.gca().xaxis.set_label_position('top')
-        ax1.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
-        ax1.plot([0, 600], [moho, moho], 'k-')
-        ax1.text(0, moho - moho / 90, 'Moho', fontsize=10)
-        ax1.plot([0, 600], [LAB, LAB], 'k-')
-        ax1.text(0, LAB - LAB / 90, 'lithosphere base', fontsize=10)
+        ax1.set(xlabel='Frictional/Yield strength (MPa)', ylabel='Depth (km)')
         ax1.plot(0, 0)
 
         ax2 = fig.add_subplot(122)
@@ -668,10 +736,6 @@ def init_plot(double_plot=True):
         plt.gca().xaxis.tick_top()
         plt.gca().xaxis.set_label_position('top')
         ax2.set(xlabel='Temperature ($\degree C$)')
-        ax2.plot([0, 1300], [moho, moho], 'k-')
-        ax2.text(0, moho - moho / 90, 'Moho', fontsize=10)
-        ax2.plot([0, 1300], [LAB, LAB], 'k-')
-        ax2.text(0, LAB - LAB / 90, 'lithosphere base', fontsize=10)
         ax2.plot(0, 0, 'k+')
 
         fig.tight_layout()
@@ -687,8 +751,8 @@ def init_plot(double_plot=True):
         ax.set(xlabel='Differential stress (MPa)', ylabel='Depth (km)')
         ax.plot([0, 600], [moho, moho], 'k-')
         ax.text(0, moho - moho / 90, 'Moho', fontsize=10)
-        ax.plot([0, 600], [LAB, LAB], 'k-')
-        ax.text(0, LAB - LAB / 90, 'lithosphere base', fontsize=10)
+        ax.plot([0, 600], [Lab, Lab], 'k-')
+        ax.text(0, Lab - Lab / 90, 'lithosphere base', fontsize=10)
         ax.plot(0, 0)
 
         fig.tight_layout()
@@ -712,8 +776,8 @@ Main Functions        Description
 ====================  ================================================================
 fric_strength         Plot frictional slopes
 stable_geotherm       Estimate and plot a steady-state geothermal gradient
-qtz_disloc_creep      Plot dislocation creep flow laws for quartz
-ol_disloc_creep       Plot dislocation creep flow laws for olivine
+quartz_strength       Plot dislocation creep flow laws for quartz
+olivine_strength      Plot dislocation creep flow laws for olivine
 
 ======================  ==============================================================
 Other functions

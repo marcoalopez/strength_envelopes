@@ -34,35 +34,40 @@
 
 import numpy as np
 
-g = 9.80665  # average gravitational acceleration [m/s**2]
 
-
-def Anderson_fault(fault_type, depth, mu, C0, lamb, ro_crust):
+def Anderson_fault(fault_type, depths, densities, mu, C0, lamb, g):
     """ Returns the corresponding differential stress in MPa for a specific depth
-    in thrust faults using the Anderson theory of faulting (Anderson, 1905).
+    based on the Anderson theory of faulting (Anderson, 1905) and the Coulomb–
+    Navier’s law of friction.
 
     Parameters
     ----------
-    depth : positive scalar
-        the depth [km]
+    fault_type : string
+        the type of fault, either 'inverse', 'normal' or 'strike-slip'
+    depths : array-like
+        an array-like with the depths [km]
+    densities : array-like
+        the corresponding average density [kg/m**3]
     mu : positive scalar
         coefficient of friction
     C0 : positive scalar
         internal cohesion of the rock [MPa]
     lamb : positive scalar
         coefficient of fluid pressure
+    g : scalar
+        average gravitational acceleration [m/s**2]
     """
 
-    depth = 1000 * depth  # convert km to m
+    depths = 1000 * depths  # convert km to m
 
     if fault_type == 'thrust':
-        diff_stress = (2 * (C0 + mu * ro_crust * g * depth * (1 - lamb))) / (np.sqrt(mu**2 + 1) - mu)
+        diff_stress = (2 * (C0 + mu * densities * g * depths * (1 - lamb))) / (np.sqrt(mu**2 + 1) - mu)
 
-    elif fault_type == 'strike':
-        diff_stress = (2 * (C0 + mu * ro_crust * g * depth * (1 - lamb))) / (np.sqrt(mu**2 + 1))
+    elif fault_type == 'strike-slip':
+        diff_stress = (2 * (C0 + mu * densities * g * depths * (1 - lamb))) / (np.sqrt(mu**2 + 1))
 
     elif fault_type == 'extension':
-        diff_stress = (- 2 * (C0 - mu * ro_crust * g * depth * (1 - lamb))) / (np.sqrt(mu**2 + 1) + mu)
+        diff_stress = (- 2 * (C0 - mu * densities * g * depths * (1 - lamb))) / (np.sqrt(mu**2 + 1) + mu)
 
     return diff_stress / 10**6
 
@@ -95,3 +100,47 @@ def power_law_creep(ss, A, n, Q, R, T, P, V, d, m, f, r):
     """
 
     return (ss * (d**m) * (f**r) * np.exp((Q + P * V) / (R * T)) / A)**(1 / n)
+
+
+def calc_average_density(depths, moho, Lab, crust_densities, crust_layers, mantle_density):
+    """ Return the corresponding average density at specific depths.
+
+    Parameters
+    ----------
+    depths : array-like
+        a list with the depths
+    moho : positive scalar
+        the depth of the moho discontinuity
+    Lab : positive scalar
+        the depth of the lithosphere-asthenosphere boundary
+    crust_densities : tuple with three values
+        the average density of the different crust layers
+    crust_layers : tuple with two values
+        depth of the base with respect to the depth of the moho
+    mantle_density : positive scalar
+        the average density of the lithospheric mantle
+
+    Assumptions
+    -----------
+    - Assumes a three-layer crust and a single-layer lithospheric mantle
+    - The uppermost layer start at depth 0
+    """
+
+    # preallocate
+    densities = np.zeros(len(depths))
+    step = depths[1] - depths[0]
+
+    for index, depth in enumerate(depths):
+
+        if depth <= crust_layers[0] * moho:  # upper crust
+            avg_density = crust_densities[0]
+        elif depth <= crust_layers[1] * moho:  # middle crust
+            avg_density = densities[index - 1] * ((depth - step) / depth) + crust_densities[1] * (step / depth)
+        elif depth <= moho:  # lower crust
+            avg_density = densities[index - 1] * ((depth - step) / depth) + crust_densities[2] * (step / depth)
+        elif depth <= Lab:  # lithospheric mantle
+            avg_density = densities[index - 1] * ((depth - step) / depth) + mantle_density * (step / depth)
+
+        densities[index] = avg_density
+
+    return densities

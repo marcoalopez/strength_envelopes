@@ -33,7 +33,7 @@
 # ============================================================================ #
 
 
-def turcotte_schubert_eq(z0, z, T_surf, Jq, A, K):
+def turcotte_schubert_eq(z0, z, T0, Jq, A, K):
     """ Apply the equation (model) of Turcotte and Schubert (1982) (ts) to estimate
     a steady-state geotherm (i.e. the T at a given depth)
 
@@ -41,7 +41,7 @@ def turcotte_schubert_eq(z0, z, T_surf, Jq, A, K):
     ----------
     z0 : surface elevation [km]
     z : max. depth in the model [km]
-    T_surf : temperature at Earth surface [K]
+    T0 : temperature at Earth surface [K]
     Jq : average heat flux [mW m**-2]
     A : average heat productivity [microW m**-3]
     K : coefficient of thermal conductivity [W m**-1 K**-1]
@@ -55,7 +55,7 @@ def turcotte_schubert_eq(z0, z, T_surf, Jq, A, K):
     The temperature in K, a floating point number
     """
 
-    return T_surf + ((Jq / K) * (z - z0)) - ((A / (2 * K)) * (z - z0)**2)
+    return T0 + ((Jq / K) * (z - z0)) - ((A / (2 * K)) * (z - z0)**2)
 
 
 def thermal_conductivity(T, K_0):
