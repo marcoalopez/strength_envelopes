@@ -1,10 +1,10 @@
 ![header](https://github.com/marcoalopez/strength_envelopes/blob/master/figures/StrengthEnvelopes_header.png?raw=true)
 
-_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/) - Last update: 2020/09/08_
+_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/) - Last update: 2020/09/09_
 
-**Strength envelopes** is a pet project consisting of a series of free open-source cross-platform [Jupyter notebooks]() aimed at building lithosphere strength envelopes. The notebooks are primarily intended for educational purposes, especially for hands-on courses, but can be easily adapted for advanced lithosphere strength modelling. The programming language used in the notebooks is [Python](https://www.python.org/), but it does **not require previous Python knowledge for its use**. All the notebooks are intended to be self-explanatory and have a smooth learning curve.
+**Strength envelopes** is a pet project consisting of a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the lithosphere. The notebooks are primarily intended for educational purposes (especially for hands-on courses) but are easily adaptable for more advanced modelling. The programming language used in the notebooks is [Python](https://www.python.org/) but does **not require previous knowledge of Python for its use**. All the notebooks are intended to be self-explanatory with a smooth learning curve.
 
-> **Important disclaimer**: The project is currently under development. This is a pet project and thus I develop it at my own pace (i.e. in my spare time).  hope to have most of the notebooks completed by early 2021. Stay tuned.
+> **Important disclaimer**: The project is currently under development. As a personal project, I develop it in my spare time and, therefore, without specific deadlines.  Anyway, I hope to have most of the notebooks completed by early 2021. Stay tuned.
 
 ## The notebooks
 To visualize the content of the notebooks just click on the topic you are interested in
@@ -16,19 +16,14 @@ To visualize the content of the notebooks just click on the topic you are intere
 
 - [Estimate a full lithosphere strength envelope](https://github.com/marcoalopez/strength_envelopes/blob/master/notebooks/Full_strength_envelope.ipynb) (status: TODO)
 
-## Requirements & Installation
+## Requirements & Python installation
 
 _Available soon with detailed instructions_
 
-Strength envelopes script requires Python 3.5+ and the scientific libraries:
+## How to use the notebooks?
 
-[Numpy](http://www.numpy.org/)
-[Matplotlib](http://matplotlib.org/)
-[IPython]()
-TODO
+_Available soon with detailed instructions_
 
-To work locally with the notebooks, I recommend installing the [Anaconda Python distribution](https://www.anaconda.com/products/individual) and using either the Jupyter lab or the notebook.
+## How to contribute to this project?
 
-
-
-
+_Available soon with detailed instructions_
