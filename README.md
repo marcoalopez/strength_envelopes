@@ -4,7 +4,7 @@ _This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.gith
 
 **Strength envelopes** is a pet project consisting of a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the lithosphere. The notebooks are primarily intended for educational purposes (especially for hands-on courses) but are easily adaptable for more advanced modelling. The programming language used in the notebooks is [Python](https://www.python.org/) but does **not require previous knowledge of Python for its use**. All the notebooks are intended to be self-explanatory with a smooth learning curve.
 
-> **Important disclaimer**: The project is currently under development. As a personal project, I develop it in my spare time and, therefore, without specific deadlines.  Anyway, I hope to have most of the notebooks completed by early 2021. Stay tuned.
+> **Important disclaimer**: The project is currently under development. As a pet project, I develop it in my spare time and without specific deadlines.  Anyway, I hope to have most of the notebooks completed by early 2021. Stay tuned.
 
 ## The notebooks
 To visualize the content of the notebooks just click on the topic you are interested in
