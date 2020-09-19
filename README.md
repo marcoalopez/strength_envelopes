@@ -8,9 +8,9 @@ _This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.gith
 
 ## The notebooks
 To visualize the content of the notebooks just click on the topic you are interested in
-- [Brittle faults](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults.ipynb?flush_cache=true) (status: _in progress_)
+- [Brittle faults](https://github.com/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults.ipynb) (status: _in progress_)
 
-- [Estimate a stable geotherm](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/stable_geotherm.ipynb?flush_cache=true) (status: _in progress_)
+- [Estimate a stable geotherm](https://github.com/marcoalopez/strength_envelopes/blob/master/notebooks/stable_geotherm.ipynb) (status: _in progress_)
 
 - [Estimate a power-law creep envelopes](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb?flush_cache=true) (status: TODO)
 
