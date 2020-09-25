@@ -12,7 +12,7 @@ To visualize the content of the notebooks just click on the topic you are intere
 
 - [Estimate a stable geotherm](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/stable_geotherm.ipynb?flush_cache=true) (status: _in progress_)
 
-- [Estimate a power-law creep envelopes](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb?flush_cache=true) (status: TODO)
+- [Estimate power-law creep envelopes](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb?flush_cache=true) (status: TODO)
 
 - [Estimate a full lithosphere strength envelope](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/Full_strength_envelope.ipynb?flush_cache=true) (status: TODO)
 
