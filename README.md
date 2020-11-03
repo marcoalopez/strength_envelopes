@@ -1,4 +1,4 @@
-![header](https://github.com/marcoalopez/strength_envelopes/blob/master/figures/headre.webp?raw=true)
+![header](https://raw.githubusercontent.com/marcoalopez/strength_envelopes/master/figures/header.webp)
 
 _This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2020/11/03
 
