@@ -1,8 +1,8 @@
 ![header](https://raw.githubusercontent.com/marcoalopez/strength_envelopes/master/figures/header.webp)
 
-_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2020/11/03
+_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2020/11/11
 
-**Strength envelopes** is a pet project consisting of a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth lithosphere. The notebooks are primarily intended for educational purposes (especially for hands-on courses) but are easily adaptable for more advanced modelling. The programming language used within the notebooks is [Python](https://www.python.org/) but does **not require previous knowledge of Python for its use**. All the notebooks are intended to be self-explanatory with a smooth learning curve and fully based on [literate computing](https://osf.io/h9gsd/).
+**Strength envelopes** is a pet project consisting of a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth lithosphere. The notebooks are primarily intended for educational purposes (especially for hands-on courses) but are easily adaptable for more advanced modelling. The programming language used within the notebooks is [Python](https://www.python.org/) but does **not require previous knowledge of Python for its use**. All the notebooks are intended to be self-explanatory and with a smooth learning curve.
 
 > **Disclaimer**: The project is currently under development. As a pet project, I develop it in my spare time and without specific deadlines.  Anyway, I hope to have most of the notebooks completed by early 2021. Stay tuned.
 
@@ -22,10 +22,10 @@ To visualize the content of the notebooks as a website just click on the topic y
 
 > **Important note**: Not yet finished! Available soon with detailed instructions
 
-A Jupyter notebook is a document that supports mixing executable code, equations, visualizations, and narrative text. To interact with the notebooks you have two main options:
+A Jupyter notebook is a document that supports mixing executable code, equations, visualizations, and narrative text, known as [literate computing](https://osf.io/h9gsd/). To interact with the notebook there are two main options:
 
-- open the notebooks locally in your computer, i.e. the notebook is stored on your hard disk. This is the fastest way to open and interact with a notebook and always have access to it. This requires, however, installing a Python distribution that includes Jupyter and several Python scientific libraries (see _Requirements & Python installation_ below).
-- open the notebook on remote servers (i.e. as a web application, for example in [mybinder.org](https://mybinder.org/) or [Google Colab](https://colab.research.google.com/), which requires a browser and an internet connection. The process of loading the notebook in this way can be quite slow, depending on its size, but it has the advantage of requiring nothing more than a browser.
+- Open the notebooks locally in your computer, i.e. the notebook is stored on your hard disk. This is the fastest way to open and interact with a notebook and always have access to it. This requires, however, installing a Python distribution that includes Jupyter and several Python scientific libraries (see _Requirements & Python installation_ below).
+- Open the notebook on remote servers as a web application (e.g. in [mybinder.org](https://mybinder.org/) or [Google Colab](https://colab.research.google.com/)). The process of loading the notebook in this way can be quite slow, depending on its size, but it has the advantage of requiring nothing more than a browser and an internet connection.
 
 TODO!!
 
@@ -35,9 +35,9 @@ TODO!!
 
 > **Important note**: Not yet finished! Available soon with detailed instructions
 
-A popular software distribution that includes Jupyter is the [Anaconda distribution (individual edition)](https://www.anaconda.com/products/individual), which is free, easy to install on Windows, Mac, and Linux and includes all the required the scientific packages (> 5 GB disk space). TODO...
+A popular software distribution that includes Jupyter is the [Anaconda distribution (individual edition)](https://www.anaconda.com/products/individual), which is free, includes all the required the scientific packages (> 5 GB disk space), and easy to install on Windows, Mac, and Linux. TODO...
 
-Jupyter notebooks can be launched by open the Anaconda navigator and launching the _Jupyter notebook_ or the _Jupyter lab_ (preferred option) or from the terminal (Anaconda prompt) typing ``jupyter notebook`` or ``jupyter lab``. Then, you'll see the application opening in the web browser on the address ``http://localhost:8888``
+Jupyter notebooks can be launched by open the Anaconda navigator and launching the _Jupyter lab_ (preferred option) or the _Jupyter notebook_ or from the terminal (Anaconda prompt) typing ``jupyter notebook`` or ``jupyter lab``. Then, you'll see the application opening in the web browser on the address ``http://localhost:8888``
 
 ## How to contribute to this project?
 
