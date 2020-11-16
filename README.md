@@ -11,9 +11,9 @@ To visualize the content of the notebooks as a website just click on the topic y
 
 - [Python & Jupyter notebook basics]() (status: TODO)
 
-- [Brittle faults 00](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults.ipynb?flush_cache=true) (status: _in progress_)
-- [Brittle faults 01]() (status: TODO)
-- [Brittle faults 02]() (status: TODO)
+- [Brittle faults (part 1): understanding shear fractures](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults.ipynb?flush_cache=true) (status: _in progress_)
+- [Brittle faults (part 2): The Anderson model](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults_2.ipynb?flush_cache=true) (status: _in progress_)
+- [Brittle faults (part 3)]() (status: TODO)
 - [Estimate a stable geotherm](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/stable_geotherm.ipynb?flush_cache=true) (status: _in progress_)
 - [Estimate power-law creep envelopes](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb?flush_cache=true) (status: _in progress_)
 - [Estimate a full lithosphere strength envelope](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/Full_strength_envelope.ipynb?flush_cache=true) (status: TODO)
@@ -28,6 +28,8 @@ A Jupyter notebook is a document that supports mixing executable code, equations
 - Open the notebook on remote servers as a web application (e.g. in [mybinder.org](https://mybinder.org/) or [Google Colab](https://colab.research.google.com/)). The process of loading the notebook in this way can be quite slow, depending on its size, but it has the advantage of requiring nothing more than a browser and an internet connection.
 
 TODO!!
+
+Finally, there are many exceptional video tutorials on the web (some not so much) about Jupyter notebooks that you may find useful. For example, this https://www.youtube.com/watch?v=HW29067qVWk&t=233s
 
 > **Are you an educator interested in using Jupyter notebooks as an educational tool?** Check the superb free book [Teaching and Learning with Jupyter](https://jupyter4edu.github.io/jupyter-edu-book/).
 
