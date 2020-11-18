@@ -29,7 +29,7 @@ A Jupyter notebook is a document that supports mixing executable code, equations
 
 TODO!!
 
-Finally, there are many exceptional video tutorials on the web (some not so much) about Jupyter notebooks that you may find useful. For example, this https://www.youtube.com/watch?v=HW29067qVWk&t=233s
+Finally, there are many exceptional video tutorials on the web (some not so much) about Jupyter notebooks that you may find useful. For example, this https://www.youtube.com/watch?v=HW29067qVWk
 
 > **Are you an educator interested in using Jupyter notebooks as an educational tool?** Check the superb free book [Teaching and Learning with Jupyter](https://jupyter4edu.github.io/jupyter-edu-book/).
 
