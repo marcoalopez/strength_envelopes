@@ -37,7 +37,7 @@ def turcotte_schubert_eq(depths, thermal):
     """ Apply the equation (model) of Turcotte and Schubert (1982) (ts) to estimate
     a steady-state geotherm (i.e. the T at a given depth)
 
-    Parameters (all positive scalars)
+    Parameters (arrays or scalar with positive values)
     ----------
     depths : a tuple with two parameters (z0, z)
         z0 is the min. depth in the model [km], a positive scalar
@@ -50,20 +50,24 @@ def turcotte_schubert_eq(depths, thermal):
 
     Assumptions
     -----------
-    Heat flux, heat productivity and coefficient of thermal
-    conductivity do not vary with depth (== averages)
+    - the temperature only vary as a function of depth (not in time, i.e. steady-state geotherm).
+    - Heat is transferred by conduction (as in the lithosphere).
+    - The temperature gradient depends on heat conduction plus the heat produced due to radioactive decay.
+    - Radioactive heat production are independent of depth.
 
     Returns
     -------
     The temperature in K, a float
     """
 
-    # extract the different parameters
-    z0, z = depths
+    # extract the different thermal parameters
     T0, Jq, A, K = thermal
+    
+    # get the min depth in the model [km]
+    z0 = depths[0]
 
     # Estimate the temperature using the Turcotte and Schubert model
-    return T0 + ((Jq / K) * (z - z0)) - ((A / (2 * K)) * (z - z0)**2)
+    return T0 + Jq / K * (depths - z0) - A / (2 * K) * (depths - z0)**2
 
 
 def thermal_conductivity(T, K_0):
