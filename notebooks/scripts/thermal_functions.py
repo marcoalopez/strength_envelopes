@@ -33,28 +33,36 @@
 # ============================================================================ #
 
 
-def turcotte_schubert_eq(z0, z, T0, Jq, A, K):
+def turcotte_schubert_eq(depths, thermal):
     """ Apply the equation (model) of Turcotte and Schubert (1982) (ts) to estimate
     a steady-state geotherm (i.e. the T at a given depth)
 
     Parameters (all positive scalars)
     ----------
-    z0 : surface elevation [km]
-    z : max. depth in the model [km]
-    T0 : temperature at Earth surface [K]
-    Jq : average heat flux [mW m**-2]
-    A : average heat productivity [microW m**-3]
-    K : coefficient of thermal conductivity [W m**-1 K**-1]
+    depths : a tuple with two parameters (z0, z)
+        z0 is the min. depth in the model [km], a positive scalar
+        z is the max. depth in the model [km], a positive scalar
+    thermal : a tuple with four parameters (T0, Jq, A, K)
+        T0 is the temperature at the min depth [C degrees]
+        Jq is the average heat flux [mW m**-2]
+        A is the average heat productivity [microW m**-3]
+        K is the coefficient of thermal conductivity [W m**-1 K**-1]
 
     Assumptions
     -----------
-    TODO
+    Heat flux, heat productivity and coefficient of thermal
+    conductivity do not vary with depth (== averages)
 
     Returns
     -------
-    The temperature in K, a floating point number
+    The temperature in K, a float
     """
 
+    # extract the different parameters
+    z0, z = depths
+    T0, Jq, A, K = thermal
+
+    # Estimate the temperature using the Turcotte and Schubert model
     return T0 + ((Jq / K) * (z - z0)) - ((A / (2 * K)) * (z - z0)**2)
 
 
@@ -83,3 +91,10 @@ def thermal_conductivity(T, K_0):
     third_term = K_0 * ((255.576 / T) - 0.30247)
 
     return 2.26 - second_term + third_term
+
+
+if __name__ == '__main__':
+    print("funtions loaded from 'thermal_functions.py': \n turcotte_schubert_eq \n thermal_conductivity loaded")
+else:
+    print('module thermal_functions imported')
+

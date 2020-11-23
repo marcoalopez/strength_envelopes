@@ -190,3 +190,9 @@ def olivine_Idrissi(R, T, stress):
     stress = stress / 1000
 
     return 1e6 * np.exp((-556e3 / (R * T)) * (1 - np.sqrt(stress / 3.8))**2)
+
+
+if __name__ == '__main__':
+    print("functions loaded 'flow_laws_params.py': \n quartz,\n olivine, \n olivine_Idrissi \n")
+else:
+    print('module flow_laws imported')
