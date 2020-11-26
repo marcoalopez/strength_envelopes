@@ -193,6 +193,6 @@ def olivine_Idrissi(R, T, stress):
 
 
 if __name__ == '__main__':
-    print("functions loaded 'flow_laws_params.py': \n quartz,\n olivine, \n olivine_Idrissi \n")
+    print("functions loaded from 'flow_laws_params.py': \n quartz,\n olivine, \n olivine_Idrissi \n")
 else:
     print('module flow_laws imported')
