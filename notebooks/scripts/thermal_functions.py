@@ -95,7 +95,7 @@ def thermal_conductivity(T, K_0):
 
 
 if __name__ == '__main__':
-    print("funtions loaded from 'thermal_functions.py': \n turcotte_schubert_model \n thermal_conductivity loaded")
+    print("funtions loaded from 'thermal_functions.py': \n turcotte_schubert_model \n thermal_conductivity")
 else:
     print('module thermal_functions imported')
 
