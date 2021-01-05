@@ -3,7 +3,7 @@
 #    Strenght envelopes                                                        #
 #    A Python script for plotting lithosphere and crust strength envelopes     #
 #                                                                              #
-#    Copyright (c) 2017-present   Marco A. Lopez-Sanchez                       #
+#    Copyright (c) 2020-present   Marco A. Lopez-Sanchez                       #
 #                                                                              #
 #    This Source Code Form is subject to the terms of the Mozilla Public       #
 #    License, v. 2.0. If a copy of the MPL was not distributed with this       #
@@ -26,9 +26,7 @@
 #    download at https://github.com/marcoalopez/Strength_envelopes/releases    #
 #                                                                              #
 #    Requirements:                                                             #
-#        Python version 3.5 or higher                                          #
-#        Numpy version 1.11 or higher                                          #
-#        Matplotlib version 2.0 or higher                                      #
+#        Python version 3.6 or higher                                          #
 #                                                                              #
 # ============================================================================ #
 
@@ -57,8 +55,8 @@ def quartz(flow_law=None):
         return None
 
     elif flow_law == 'HTD':  # from Hirth et al. (2001)
-        n = 4.0  # stress exponent
-        Q = 135000  # activation energy [J mol**-1]
+        n = 4.0          # stress exponent
+        Q = 135000       # activation energy [J mol**-1]
         A = 10**(-11.2)  # material parameter [MPa**-n s**-1]
 
     elif flow_law == 'LP_wet':  # from Luan and Paterson (1992)
@@ -111,11 +109,11 @@ def olivine(flow_law=None):
         return None
 
     elif flow_law == 'HK_wet':  # from Hirth and Kohlstedt (2003). Wet Olivine
-        n = 3.5  # stress exponent
-        Q = 520000  # activation energy [J mol**-1]
+        n = 3.5        # stress exponent
+        Q = 520000     # activation energy [J mol**-1]
         A = 10**(3.2)  # material parameter [MPa**-n s**-1]
-        V = 2.2e-05  # activation volume per mol [m**3 mol**-1]
-        r = 0  # water fugacity exponent
+        V = 2.2e-05    # activation volume per mol [m**3 mol**-1]
+        r = 0          # water fugacity exponent
 
     elif flow_law == 'HK_dry':  # from Hirth and Kohlstedt (2003). Dry Olivine
         n = 3.5
@@ -143,14 +141,14 @@ def olivine(flow_law=None):
         Q = 550000
         A = 10**(4.8)
         V = 0.0  # activation volume per mol not provided!
-        r = 0  # not provided
+        r = 0    # not provided
 
     elif flow_law == 'Faul_dry':  # from Faul et al. (2011). Dry olivine
         n = 8.2
         Q = 682000
         A = 0.3
         V = 0.0  # activation volume per mol not provided!
-        r = 0  # not provided
+        r = 0    # not provided
 
     elif flow_law == 'Ohuchi':  # from Ohuchi et al. (2015)
         n = 3.0

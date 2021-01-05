@@ -3,7 +3,7 @@
 #    This is part of the strenght_envelopes script                             #
 #    A Python script for plotting lithosphere and crust strength envelopes     #
 #                                                                              #
-#    Copyright (c) 2017-present   Marco A. Lopez-Sanchez                       #
+#    Copyright (c) 2020-present   Marco A. Lopez-Sanchez                       #
 #                                                                              #
 #    This Source Code Form is subject to the terms of the Mozilla Public       #
 #    License, v. 2.0. If a copy of the MPL was not distributed with this       #
@@ -26,9 +26,7 @@
 #    download at https://github.com/marcoalopez/Strength_envelopes/releases    #
 #                                                                              #
 #    Requirements:                                                             #
-#        Python version 3.5 or higher                                          #
-#        Numpy version 1.11 or higher                                          #
-#        Matplotlib version 2.0 or higher                                      #
+#        Python version 3.6 or higher                                          #
 #                                                                              #
 # ============================================================================ #
 
