@@ -1,6 +1,6 @@
 ![header](https://raw.githubusercontent.com/marcoalopez/strength_envelopes/master/figures/header.webp)
 
-_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2020/11/18
+_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2021/01/07
 
 **Strength envelopes** is a pet project consisting of a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth lithosphere. The notebooks are primarily intended for educational purposes (especially for hands-on courses) but are easily adaptable for more advanced modelling. The programming language used within the notebooks is [Python](https://www.python.org/) but does **not require previous knowledge of Python for its use**. All the notebooks are intended to be self-explanatory and with a smooth learning curve.
 
@@ -9,7 +9,7 @@ _This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.gith
 ## The notebooks
 To visualize the content of the notebooks as a website just click on the topic you are interested in
 
-- [Python & Jupyter notebook basics]() (status: TODO)
+- [Python for science: the basics](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/Python_basics.ipynb?flush_cache=true) status: _in progress_)
 
 - [Brittle faults (part 1): understanding shear fractures](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults.ipynb?flush_cache=true) (status: _in progress_)
 - [Brittle faults (part 2): The Anderson model](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults_2.ipynb?flush_cache=true) (status: _in progress_)
