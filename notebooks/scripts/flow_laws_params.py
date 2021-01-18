@@ -31,6 +31,7 @@
 # ============================================================================ #
 
 import numpy as np
+from types import SimpleNamespace
 
 
 def quartz(flow_law=None):
@@ -41,7 +42,8 @@ def quartz(flow_law=None):
 
     Returns
     -------
-    The stress exponent (n), the activation energy (Q) [J mol**-1], the material
+    A SimpleNamespace object containing the stress exponent (n),
+    the activation energy (Q) [J mol**-1], and the material
     constant (A) [MPa**-n s**-1]
     """
 
@@ -82,7 +84,7 @@ def quartz(flow_law=None):
     else:
         raise ValueError("Quartz flow law name misspelled. Use 'HTD', 'LP_wet', 'GT_wet', 'HK_wet' or 'RB_wet'")
 
-    return n, Q, A
+    return SimpleNamespace(n=n, Q=Q, A=A)
 
 
 def olivine(flow_law=None):
@@ -93,8 +95,10 @@ def olivine(flow_law=None):
 
     Returns
     -------
-    The stress exponent (n), the activation energy (Q) [J mol**-1], the material
-    constant (A) [MPa**-n s**-1], and the activation volume per mol (V) [m**3 mol**-1]
+    A SimpleNamespace object containing the stress exponent (n),
+    the activation energy (Q) [J mol**-1], the material constant (A)
+    [MPa**-n s**-1], the activation volume per mol (V) [m**3 mol**-1],
+    and the water figacity exponent (r)
     """
 
     if flow_law is None:
@@ -160,7 +164,7 @@ def olivine(flow_law=None):
     else:
         raise ValueError("Olivine flow law name misspelled. Use 'HK_wet', 'HK_dry', 'KJ_wet', 'KJ_dry', 'ZK_dry', 'Faul_dry', or 'Ohuchi'")
 
-    return n, Q, A, V, r
+    return SimpleNamespace(n=n, Q=Q, A=A, V=V, r=r)
 
 
 def olivine_Idrissi(R, T, stress):
