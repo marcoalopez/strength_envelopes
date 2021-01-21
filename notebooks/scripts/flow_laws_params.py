@@ -58,38 +58,38 @@ def quartz(flow_law=None):
 
     elif flow_law == 'HTD':  # from Hirth et al. (2001)
         n = 4.0          # stress exponent
-        Q = 135000       # activation energy [J mol**-1]
+        E = 135000       # activation energy [J mol**-1]
         A = 10**(-11.2)  # material parameter [MPa**-n s**-1]
         ref = 'Hirth et al. (2004)'
 
     elif flow_law == 'LP_wet':  # from Luan and Paterson (1992)
         n = 4.0
-        Q = 152000
+        E = 152000
         A = 10**(-7.2)
         ref = 'Luan and Paterson (1992)'
 
     elif flow_law == 'GT_wet':  # from Gleason and Tullis (1995). Wet quartzite.
         n = 4.0
-        Q = 223000
+        E = 223000
         A = 1.1e-4
         ref = 'Gleason and Tullis (1995)'
 
     elif flow_law == 'HK_wet':  # Holyoke and Kronenberg (2010), based on Gleason and Tullis (1995) data
         n = 4.0
-        Q = 223000
+        E = 223000
         A = 5.1e-4
         ref = 'Holyoke and Kronenberg (2010)'
 
     elif flow_law == 'RB_wet':  # from Rutter and Brodie (2004). Wet quartzite, minor grain boundary sliding inferred.
         n = 2.97
-        Q = 242000
+        E = 242000
         A = 10**(-4.93)
         ref = 'Rutter and Brodie (2004)'
 
     else:
         raise ValueError("Quartz flow law name misspelled. Use 'HTD', 'LP_wet', 'GT_wet', 'HK_wet' or 'RB_wet'")
 
-    return SimpleNamespace(n=n, Q=Q, A=A, ref=ref)
+    return SimpleNamespace(n=n, E=E, A=A, ref=ref)
 
 
 def olivine(flow_law=None):
@@ -119,7 +119,7 @@ def olivine(flow_law=None):
 
     elif flow_law == 'HK_wet':  # from Hirth and Kohlstedt (2003). Wet Olivine
         n = 3.5        # stress exponent
-        Q = 520000     # activation energy [J mol**-1]
+        E = 520000     # activation energy [J mol**-1]
         A = 10**(3.2)  # material parameter [MPa**-n s**-1]
         V = 2.2e-05    # activation volume per mol [m**3 mol**-1]
         r = np.nan     # water fugacity exponent
@@ -127,7 +127,7 @@ def olivine(flow_law=None):
 
     elif flow_law == 'HK_dry':  # from Hirth and Kohlstedt (2003). Dry Olivine
         n = 3.5
-        Q = 530000
+        E = 530000
         A = 10**(5.0)
         V = 1.8e-05
         r = np.nan  # not provided
@@ -135,7 +135,7 @@ def olivine(flow_law=None):
 
     elif flow_law == 'KJ_wet':  # from Karato and Jung (2003). Wet olivine
         n = 3.0
-        Q = 470000
+        E = 470000
         A = 10**(2.9)
         V = 2.4e-05
         r = np.nan  # not provided
@@ -143,7 +143,7 @@ def olivine(flow_law=None):
 
     elif flow_law == 'KJ_dry':  # from Karato and Jung (2003). Dry olivine
         n = 3.0
-        Q = 510000
+        E = 510000
         A = 10**(6.1)
         V = 1.4e-05
         r = np.nan  # not provided
@@ -151,7 +151,7 @@ def olivine(flow_law=None):
 
     elif flow_law == 'ZK_dry':  # from Zimmerman and Kohlstedt (2004). Dry peridotite
         n = 4.3
-        Q = 550000
+        E = 550000
         A = 10**(4.8)
         V = np.nan  # activation volume per mol not provided!
         r = np.nan  # not provided
@@ -159,7 +159,7 @@ def olivine(flow_law=None):
 
     elif flow_law == 'Faul_dry':  # from Faul et al. (2011). Dry olivine
         n = 8.2
-        Q = 682000
+        E = 682000
         A = 0.3
         V = np.nan  # activation volume per mol not provided!
         r = np.nan  # not provided
@@ -167,7 +167,7 @@ def olivine(flow_law=None):
 
     elif flow_law == 'Ohuchi':  # from Ohuchi et al. (2015)
         n = 3.0
-        Q = 423000
+        E = 423000
         A = 10**(-4.89)
         V = 17.6e-06
         r = 1.25
@@ -176,7 +176,7 @@ def olivine(flow_law=None):
     else:
         raise ValueError("Olivine flow law name misspelled. Use 'HK_wet', 'HK_dry', 'KJ_wet', 'KJ_dry', 'ZK_dry', 'Faul_dry', or 'Ohuchi'")
 
-    return SimpleNamespace(n=n, Q=Q, A=A, V=V, r=r, ref=ref)
+    return SimpleNamespace(n=n, E=E, A=A, V=V, r=r, ref=ref)
 
 
 def olivine_Idrissi(R, T, stress):

@@ -10,12 +10,13 @@ _This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.gith
 To visualize the content of the notebooks as a website just click on the topic you are interested in
 
 - [Python for science: the basics](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/Python_basics.ipynb?flush_cache=true) status: _in progress_)
-
 - [Brittle faults (part 1): understanding shear fractures](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults.ipynb?flush_cache=true) (status: _in progress_)
 - [Brittle faults (part 2): The Anderson model](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults_2.ipynb?flush_cache=true) (status: _in progress_)
 - [Brittle faults (part 3)]() (status: TODO)
 - [Estimate a stable geotherm](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/stable_geotherm.ipynb?flush_cache=true) (status: _in progress_)
-- [Estimate power-law creep envelopes](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb?flush_cache=true) (status: _in progress_)
+- [Estimate power-law creep envelopes (part 1)](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb?flush_cache=true) (status: _in progress_)
+- [Estimate power-law creep envelopes (part 2)]() (status: TODO)
+- [Estimate power-law creep envelopes (part 3)]() (status: TODO)
 - [Estimate a full lithosphere strength envelope](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/Full_strength_envelope.ipynb?flush_cache=true) (status: TODO)
 
 ## What is Jupyter notebook and how to use it?
