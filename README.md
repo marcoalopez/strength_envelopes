@@ -1,6 +1,6 @@
 ![header](https://raw.githubusercontent.com/marcoalopez/strength_envelopes/master/figures/header.webp)
 
-_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2021/01/24
+_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2021/01/27
 
 **Strength envelopes** is a pet project consisting of a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth lithosphere. The notebooks are primarily intended for educational purposes (especially for hands-on courses) but are easily adaptable for more advanced modelling. The programming language used within the notebooks is [Python](https://www.python.org/) but does **not require previous knowledge of Python for its use**. All the notebooks are intended to be self-explanatory and with a smooth learning curve.
 
@@ -44,12 +44,13 @@ Jupyter notebooks can be launched by open the Anaconda navigator and launching t
 
 ## How to contribute to this project?
 
-The github website that host the project provides several options here (you will need a github account, it’s free!):
+The github website hosting the project provides several options (you will need a github account, it’s free!):
 
 - Open a [discussion](https://github.com/marcoalopez/strength_envelopes/discussions): This is a place to:
   - Ask questions you are wondering about.
   - Share ideas.
   - Engage with the developers (still just me).
-
 - Open and [issue](https://github.com/marcoalopez/strength_envelopes/issues): This is a place to track bugs or or requests for specific features on the notebooks.
 - Create a [pull request](https://github.com/marcoalopez/strength_envelopes/pulls): You modified, corrected or added a feature to one of the notebooks and send it for one of the developers to review and add (or propose modifications)  to the main page.
+
+Besides, if you want to contribute in any way you might want to take a look at the [code of conduct](https://github.com/marcoalopez/strength_envelopes/blob/master/CODE_OF_CONDUCT.md) (TLDR: be nice to others 😉).  
