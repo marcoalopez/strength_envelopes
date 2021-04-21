@@ -35,7 +35,7 @@ Lastly, there are exceptional Jupyter notebook video tutorials on the web (other
 A popular software distribution that includes the Jupyter notebook is the [Anaconda distribution (individual edition)](https://www.anaconda.com/products/individual), which is free, includes all the necessary the scientific packages (> 5 GB disk space), and ready to install on Windows, Mac, and Linux. Another option is to install [Miniconda](https://docs.conda.io/en/latest/miniconda.html), which is a free minimal Python & Conda installation. If you are not sure whether you should install, read [this](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html#anaconda-or-miniconda). If you installed Miniconda, open the _Anaconda prompt_ and use the following command to install the minimum necessary dependencies to interact locally with the notebooks.
 
 ```shell
->>> conda install numpy scipy pandas matplotlib jupyterlab
+>>> conda install numpy scipy pandas matplotlib jupyter ipython jupyterlab 
 ```
 
 Jupyter notebooks can be launched by open the Anaconda navigator (if you installed Anaconda) and launching the _Jupyter lab_ (preferred option) or the _Jupyter notebook_ or from the terminal (_Anaconda prompt_) typing ``jupyter notebook`` or ``jupyter lab``. Then, you'll see the application opening in one of your browser tabs.
