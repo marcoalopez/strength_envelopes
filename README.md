@@ -51,7 +51,7 @@ The GitHub website hosting the project provides several options (you will need a
 - Open and [issue](https://github.com/marcoalopez/strength_envelopes/issues): This is a place to track bugs or requests for specific features on the notebooks.
 - Create a [pull request](https://github.com/marcoalopez/strength_envelopes/pulls): You modified, corrected or added a feature to one of the notebooks and send it for one of the developers to review it and add it to the main page.
 
-Besides, if you want to contribute to the project, you might want to glimpse at the [code of conduct](https://github.com/marcoalopez/strength_envelopes/blob/master/CODE_OF_CONDUCT.md) (TLDR: be nice to others 😉).  
+For a quick explanation see https://www.youtube.com/watch?v=R8OAwrcMlRw. Besides, if you want to contribute to the project, you might want to glimpse at the [code of conduct](https://github.com/marcoalopez/strength_envelopes/blob/master/CODE_OF_CONDUCT.md) (TLDR: be nice to others 😉).  
 
 
 

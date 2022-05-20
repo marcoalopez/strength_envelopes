@@ -139,7 +139,7 @@ def olivine(flow_law=None):
         A = 10**(2.9)
         V = 2.4e-05
         r = np.nan  # not provided
-        ref = 'Karato and Jung (2003)'        
+        ref = 'Karato and Jung (2003)'
 
     elif flow_law == 'KJ_dry':  # from Karato and Jung (2003). Dry olivine
         n = 3.0
@@ -147,7 +147,7 @@ def olivine(flow_law=None):
         A = 10**(6.1)
         V = 1.4e-05
         r = np.nan  # not provided
-        ref = 'Karato and Jung (2003)'     
+        ref = 'Karato and Jung (2003)'
 
     elif flow_law == 'ZK_dry':  # from Zimmerman and Kohlstedt (2004). Dry peridotite
         n = 4.3
@@ -155,7 +155,7 @@ def olivine(flow_law=None):
         A = 10**(4.8)
         V = np.nan  # activation volume per mol not provided!
         r = np.nan  # not provided
-        ref = 'Zimmerman and Kohlstedt (2004)'     
+        ref = 'Zimmerman and Kohlstedt (2004)'
 
     elif flow_law == 'Faul_dry':  # from Faul et al. (2011). Dry olivine
         n = 8.2
