@@ -1,10 +1,10 @@
 ![header](https://raw.githubusercontent.com/marcoalopez/strength_envelopes/master/figures/header.webp)
 
-_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2022-08-20
+_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2022-08-23  
 
-**Strength envelopes** is a pet project consisting of a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth lithosphere. The notebooks are primarily intended for educational purposes (especially for hands-on courses) but are easily adaptable for more advanced modelling. The programming language used within the notebooks is [Python](https://www.python.org/) but does **not require previous knowledge of Python for its use**. All the notebooks are intended to be self-explanatory and with a smooth learning curve.
+**Strength envelopes** is a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth's lithosphere. The notebooks are primarily intended for educational purposes (hands-on courses) but are easily adaptable for more advanced modelling. The programming language used is [Python](https://www.python.org/) but **no prior knowledge of Python is required for use**. All the notebooks are intended to be self-explanatory and with a smooth learning curve.
 
-> **Disclaimer**: The project is currently under development. As a pet project, I develop it in my spare time and without specific deadlines.  Anyway, I hope to have most of the notebooks completed by the end of 2022. Stay tuned here https://twitter.com/lsmarcoa
+> **Disclaimer**: The project is currently under development. As a pet project, I develop it in my spare time and without specific deadlines. Still, I hope to have most of the notebooks completed by the end of 2022. Stay tuned here https://twitter.com/lsmarcoa
 
 ## The notebooks
 To visualize the content of the notebooks as a website just click on the topic you are interested in (the list may increase or decrease without notice over time)
@@ -26,7 +26,7 @@ A Jupyter notebook is a document that supports mixing executable code ( **Ju**li
 - Open the notebook locally on your computer, i.e. the notebook is stored on your hard disk. This is the fastest way to open and interact with a notebook and always have access to it. This requires, however, installing a Python distribution that includes Jupyter and several Python scientific libraries (see _Requirements & Python installation_ below) and download the notebooks. _A link to download all the notebooks available soon!_
 - Open the notebook on remote servers as a web application (e.g. in [mybinder.org](https://mybinder.org/) or [Google Colab](https://colab.research.google.com/)). The process of loading the notebook in this way can be quite slow, depending on its size, but it has the advantage of requiring nothing more than a browser and an internet connection. _More details on this modality coming soon!_
 
-Lastly, there are exceptional Jupyter notebook video tutorials on the web (others not so much). For example, this one here https://www.youtube.com/watch?v=HW29067qVWk
+Lastly, there are exceptional Jupyter notebook video tutorials on the web (others not so much). For example, this one: https://www.youtube.com/watch?v=HW29067qVWk
 
 > **Are you an educator interested in using Jupyter notebooks as an educational tool?** Check the superb free book [Teaching and Learning with Jupyter](https://jupyter4edu.github.io/jupyter-edu-book/).
 
