@@ -1,6 +1,6 @@
 ![header](https://raw.githubusercontent.com/marcoalopez/strength_envelopes/master/figures/header.webp)
 
-_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2022-08-23  
+_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2022-08-25  
 
 **Strength envelopes** is a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth's lithosphere. The notebooks are primarily intended for educational purposes (hands-on courses) but are easily adaptable for more advanced modelling. The programming language used is [Python](https://www.python.org/) but **no prior knowledge of Python is required for use**. All the notebooks are intended to be self-explanatory and with a smooth learning curve.
 
@@ -14,9 +14,9 @@ To visualize the content of the notebooks as a website just click on the topic y
 - [Brittle faults (part 2): the role of pore pressure]() (status: TODO)
 - [Brittle faults (part 3): the Anderson model](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults_2.ipynb) (status: _in progress_)
 - [Estimate a stable geotherm](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/stable_geotherm.ipynb) (status: _mostly done_)
-- [Power-law creep envelopes (part 1)](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb) (status: _in progress_)
+- [A gentle introduction to flow laws and power-law creep](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb) (status: _in progress_)
+- [Power-law creep envelopes (part 1)]() (status: TODO)
 - [Power-law creep envelopes (part 2)]() (status: TODO)
-- [Power-law creep envelopes (part 3)]() (status: TODO)
 - [Estimate a full lithosphere strength envelope](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/Full_strength_envelope.ipynb?flush_cache=true) (status: TODO)
 
 ## What is a Jupyter notebook and how to use it?
@@ -59,6 +59,6 @@ For a quick explanation see https://www.youtube.com/watch?v=R8OAwrcMlRw. Besides
 
 *Copyright © 2022 Marco A. Lopez-Sanchez*  
 
-*Information presented on this website and the documentation of the script is provided without any express or implied warranty and may include technical inaccuracies or typing errors; the author reserve the right to modify or enhance the content of this website as well as the documentation of the script at any time without previous notice. This webpage and the documentation is not liable for the content of external links.*  
+_Information presented on this website and the notebooks is provided without any express or implied warranty and may include technical inaccuracies or typing errors; the author reserve the right to modify or enhance the content of this website as well as the notebooks at any time without previous notice. This webpage and the notebooks are not liable for the content of external links. Notebook contents under [Creative Commons Attribution license CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/) and codes under [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/)._
 
-*Hosted on GitHub Pages — This website was created with [Typora](https://typora.io/)*
+_Hosted on GitHub Pages — This website was created with [Typora](https://typora.io/)_
