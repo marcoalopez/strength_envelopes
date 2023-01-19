@@ -1,10 +1,10 @@
 ![header](https://raw.githubusercontent.com/marcoalopez/strength_envelopes/master/figures/header.webp)
 
-_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2022-08-25  
+_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2023-01-19  
 
 **Strength envelopes** is a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth's lithosphere. The notebooks are primarily intended for educational purposes (hands-on courses) but are easily adaptable for more advanced modelling. The programming language used is [Python](https://www.python.org/) but **no prior knowledge of Python is required for use**. All the notebooks are intended to be self-explanatory and with a smooth learning curve.
 
-> **Disclaimer**: The project is currently under development. As a pet project, I develop it in my spare time and without specific deadlines. Still, I hope to have most of the notebooks completed by the end of 2022. Stay tuned here https://twitter.com/lsmarcoa
+> **Disclaimer**: The project is currently under development. As a pet project, I develop it in my spare time and without specific deadlines. Still, I hope to have most of the notebooks completed by the end of 2023. Stay tuned in [@lsmarcoa](https://twitter.com/lsmarcoa) or https://fediscience.org/@marcoalopez 
 
 ## The notebooks
 To visualize the content of the notebooks as a website just click on the topic you are interested in (the list may increase or decrease without notice over time)
@@ -28,14 +28,14 @@ A Jupyter notebook is a document that supports mixing executable code ( **Ju**li
 
 Lastly, there are exceptional Jupyter notebook video tutorials on the web (others not so much). For example, this one: https://www.youtube.com/watch?v=HW29067qVWk
 
-> **Are you an educator interested in using Jupyter notebooks as an educational tool?** Check the superb free book [Teaching and Learning with Jupyter](https://jupyter4edu.github.io/jupyter-edu-book/).
+> 🚨**Are you an educator interested in using Jupyter notebooks as an educational tool?** Check the superb free book [Teaching and Learning with Jupyter](https://jupyter4edu.github.io/jupyter-edu-book/).
 
 ## Requirements & Python installation
 
 A popular software distribution that includes the Jupyter notebook is the [Anaconda distribution (individual edition)](https://www.anaconda.com/products/individual), which is free, includes all the necessary scientific packages (> 5 GB disk space), and is ready to install on Windows, Mac, and Linux. Pick the installer with the newest version of Python and voila! Another option is to install [Miniconda](https://docs.conda.io/en/latest/miniconda.html), which is a free minimal Python & Conda installation. If you are not sure whether you should install it, read [this](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html#anaconda-or-miniconda). If you installed Miniconda, open the _Anaconda prompt_ and use the following command to install the minimum necessary dependencies to interact locally with the notebooks.
 
 ```shell
->>> conda install numpy scipy pandas matplotlib jupyter ipython jupyterlab 
+>>> conda install numpy scipy pandas matplotlib jupyterlab 
 ```
 
 Jupyter notebooks can be launched by open the Anaconda navigator (if you installed Anaconda) and launching the _Jupyter lab_ (preferred option) or the _Jupyter notebook_ or, more quickly, from the terminal (_Anaconda prompt_) typing ``jupyter lab`` or  ``jupyter notebook``. Then, you'll see the application opening in your browser. If you prefer a standalone application to interact with the notebooks you can install https://code.visualstudio.com/ and add the *Python* and *Jupyter* plug-ins.
@@ -57,7 +57,7 @@ For a quick explanation see https://www.youtube.com/watch?v=R8OAwrcMlRw. Besides
 
 ---
 
-*Copyright © 2022 Marco A. Lopez-Sanchez*  
+*Copyright © 2023 Marco A. Lopez-Sanchez*  
 
 _Information presented on this website and the notebooks is provided without any express or implied warranty and may include technical inaccuracies or typing errors; the author reserve the right to modify or enhance the content of this website as well as the notebooks at any time without previous notice. This webpage and the notebooks are not liable for the content of external links. Notebook contents under [Creative Commons Attribution license CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/) and codes under [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/)._
 
