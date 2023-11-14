@@ -1,20 +1,20 @@
 ![header](https://raw.githubusercontent.com/marcoalopez/strength_envelopes/master/figures/header.webp)
 
-_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2023-01-19  
+_This project is maintained by [Marco A. Lopez-Sanchez](https://marcoalopez.github.io/)_ - Last update: 2023-11-14  
 
 **Strength envelopes** is a series of free open-source multi-platform [Jupyter notebooks](https://jupyter.org/) aimed at building strength envelopes for the earth's lithosphere. The notebooks are primarily intended for educational purposes (hands-on courses) but are easily adaptable for more advanced modelling. The programming language used is [Python](https://www.python.org/) but **no prior knowledge of Python is required for use**. All the notebooks are intended to be self-explanatory and with a smooth learning curve.
 
-> **Disclaimer**: The project is currently under development. As a pet project, I develop it in my spare time and without specific deadlines. Still, I hope to have most of the notebooks completed by the end of 2023. Stay tuned in [@lsmarcoa](https://twitter.com/lsmarcoa) or https://fediscience.org/@marcoalopez 
+> **Disclaimer**: The project is currently under development. As a pet project, I develop it in my spare time and without specific deadlines. Stay tuned in https://fediscience.org/@marcoalopez 
 
 ## The notebooks
 To visualize the content of the notebooks as a website just click on the topic you are interested in (the list may increase or decrease without notice over time)
 
 - [Python basics](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/Python_basics.ipynb) (status: _in progress_)
-- [Brittle faults (part 1): understanding shear fractures](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults.ipynb) (status: _in progress_)
+- [Brittle faults (part 1): understanding shear fractures](https://nbviewer.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults.ipynb) (status: _in progress_)
 - [Brittle faults (part 2): the role of pore pressure]() (status: TODO)
-- [Brittle faults (part 3): the Anderson model](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults_2.ipynb) (status: _in progress_)
-- [Estimate a stable geotherm](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/stable_geotherm.ipynb) (status: _mostly done_)
-- [A gentle introduction to flow laws and power-law creep](https://deepnote.com/viewer/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb) (status: _in progress_)
+- [Brittle faults (part 3): the Anderson model](https://nbviewer.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/brittle_faults_2.ipynb) (status: _in progress_)
+- [Estimate a stable geotherm](https://nbviewer.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/stable_geotherm.ipynb) (status: _mostly done_)
+- [A gentle introduction to flow laws and power-law creep](https://nbviewer.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/creep_flow_laws.ipynb) (status: _in progress_)
 - [Power-law creep envelopes (part 1)]() (status: TODO)
 - [Power-law creep envelopes (part 2)]() (status: TODO)
 - [Estimate a full lithosphere strength envelope](https://nbviewer.jupyter.org/github/marcoalopez/strength_envelopes/blob/master/notebooks/Full_strength_envelope.ipynb?flush_cache=true) (status: TODO)
